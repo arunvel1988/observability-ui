@@ -1,2 +1,2 @@
-# observabiltiy-ui
-observabiltiy-ui
+
+# observability-ui
