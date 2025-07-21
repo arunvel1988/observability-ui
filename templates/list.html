@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ os_type }} Containers</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background: linear-gradient(to right, #f3e5f5, #e3f2fd);
+      padding: 50px;
+      color: #333;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: auto;
+      background: #ffffff;
+      padding: 40px;
+      border-radius: 15px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+      color: #6a1b9a;
+      font-size: 2rem;
+      margin-bottom: 25px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      padding: 14px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+      font-size: 1rem;
+    }
+
+    th {
+      background-color: #ede7f6;
+      color: #4527a0;
+    }
+
+    tr:hover {
+      background-color: #f1f1f1;
+    }
+
+    .badge-running {
+      background-color: #4caf50;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-weight: bold;
+    }
+
+    .badge-other {
+      background-color: #f44336;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-weight: bold;
+    }
+
+    .btn {
+      display: inline-block;
+      margin-top: 30px;
+      padding: 12px 25px;
+      background-color: #6a1b9a;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      margin-right: 10px;
+      transition: background 0.3s ease;
+    }
+
+    .btn:hover {
+      background-color: #4527a0;
+    }
+
+    .btn-secondary {
+      background-color: #607d8b;
+    }
+
+    .btn-secondary:hover {
+      background-color: #455a64;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>{{ os_type }} Containers</h2>
+
+    {% if containers %}
+    <table>
+      <tr>
+        <th>Container Name</th>
+        <th>Status</th>
+        <th>Version</th>
+        <th>Image</th>
+        <th>Ports</th>
+      </tr>
+      {% for container in containers %}
+      <tr>
+        <td>{{ container.name }}</td>
+        <td>
+          {% if container.status == "running" %}
+            <span class="badge-running">Running</span>
+          {% else %}
+            <span class="badge-other">{{ container.status }}</span>
+          {% endif %}
+        </td>
+        <td>{{ container.version }}</td>
+        <td>{{ container.image }}</td>
+        <td>{{ container.ports }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+    {% else %}
+      <p>No {{ os_type }} containers are currently running.</p>
+    {% endif %}
+
+    <a class="btn" href="/windows/{{ 'server' if os_type == 'Windows Server' else 'desktop' }}">⬅ Back to {{ os_type }} Options</a>
+    <a class="btn btn-secondary" href="/">🏠 Home</a>
+  </div>
+</body>
+</html>
+

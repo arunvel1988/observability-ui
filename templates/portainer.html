@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Install Portainer</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f6f8;
+            color: #333;
+            padding: 50px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        h1 {
+            color: #007bff;
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+
+        .message {
+            font-size: 1.1rem;
+            margin-top: 20px;
+            color: #333;
+        }
+
+        .btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 12px 25px;
+            font-size: 1rem;
+            background-color: #28a745;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn:hover {
+            background-color: #218838;
+        }
+
+        .btn-back {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 12px 25px;
+            background-color: #6c757d;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-back:hover {
+            background-color: #5a6268;
+        }
+
+        a.link {
+            color: #007bff;
+            font-weight: bold;
+        }
+
+        a.link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚙️ Portainer Installation</h1>
+
+        {% if installed %}
+            <p class="message">✅ Portainer is already installed.</p>
+            <p>👉 Access it here: <a class="link" href="{{ url }}" target="_blank">{{ url }}</a></p>
+        {% else %}
+            <p class="message">❌ Portainer is not installed yet.</p>
+            <form method="POST">
+                <button class="btn" type="submit">🚀 Install Portainer</button>
+            </form>
+        {% endif %}
+
+        {% if message %}
+            <p class="message">{{ message }}</p>
+        {% endif %}
+
+        <a class="btn-back" href="/">⬅ Back to Home</a>
+        <a class="btn-back" href="/observability"> Observability (Logs, Metrics, Traces)</a>
+    </div>
+</body>
+</html>

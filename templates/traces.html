@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Observability - Traces</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 30px; background-color: #f0f8ff; }
+        h1 { color: #2c3e50; }
+        .info { margin-top: 20px; }
+        .install-btn {
+            display: inline-block;
+            padding: 10px 15px;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+        .install-btn:hover {
+            background-color: #2980b9;
+        }
+        ul li { margin: 6px 0; }
+    </style>
+</head>
+<body>
+    <h1>📈 Traces in Observability</h1>
+    
+    <div class="info">
+        <p><strong>Traces</strong> help visualize the journey of a request across different microservices, showing how long each service took and where bottlenecks might occur.</p>
+        <p>They are critical in understanding **latency**, **dependencies**, and **service health** in distributed systems.</p>
+    </div>
+
+    <div class="info">
+        <h2>🛒 Traces in an E-commerce Website</h2>
+        <ul>
+            <li>📦 User adds product → request hits <strong>cart-service</strong></li>
+            <li>🧾 Checkout triggers <strong>order-service</strong></li>
+            <li>💳 Order calls <strong>payment-service</strong></li>
+            <li>🚚 Payment success invokes <strong>shipping-service</strong></li>
+            <li>🔁 All services traced in one flow with span/timeline</li>
+        </ul>
+    </div>
+
+    <div class="info">
+        <h2>🖥️ Traces in Microservice Infrastructure</h2>
+        <ul>
+            <li>📍 Entry-point services (e.g., API Gateway) initiate root span</li>
+            <li>🔧 Each internal service adds its span with latency details</li>
+            <li>🧩 Helps detect service-level performance degradation</li>
+            <li>⏱️ Latency heatmaps in tracing tools (e.g., Jaeger, Tempo)</li>
+            <li>📊 End-to-end request timeline for debugging and optimization</li>
+        </ul>
+    </div>
+
+    <div class="info">
+        <h2>Install Jaeger Tracing Stack</h2>
+        <p>This will install from <code>https://github.com/arunvel1988/jaeger-devops-demo</code>.</p>
+        <a class="install-btn" href="/traces/install">Install Traces Stack</a>
+        <a class="install-btn" href="/traces/delete">Delete Traces Stack</a>
+        <a class="install-btn" href="/traces/status">Traces Stack Status</a>
+        <a class="install-btn" href="/observability">Observability</a>
+        <a class="install-btn" href="/">Home</a>
+    </div>
+</body>
+</html>
+

@@ -1,0 +1,21 @@
+
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+- role: control-plane
+  extraMounts:
+  - hostPath: /var/log/containers
+    containerPath: /var/log/containers
+  - hostPath: /var/log/pods
+    containerPath: /var/log/pods
+  - hostPath: /var/lib/docker/containers
+    containerPath: /var/lib/docker/containers
+- role: worker
+  extraMounts:
+  - hostPath: /var/log/containers
+    containerPath: /var/log/containers
+  - hostPath: /var/log/pods
+    containerPath: /var/log/pods
+  - hostPath: /var/lib/docker/containers
+    containerPath: /var/lib/docker/containers
+

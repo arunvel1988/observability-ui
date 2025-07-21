@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Observability - Metrics</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 30px; 
+            background-color: #f0f4f8; 
+        }
+        h1 { 
+            color: #2c3e50; 
+        }
+        .info { 
+            margin-top: 20px; 
+            background-color: #ffffff; 
+            padding: 20px; 
+            border-radius: 10px; 
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); 
+        }
+        ul {
+            margin-top: 10px;
+        }
+        .install-btn {
+            display: inline-block;
+            padding: 10px 18px;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            margin-right: 10px;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+        }
+        .install-btn:hover {
+            background-color: #2980b9;
+        }
+        code {
+            background-color: #eef;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>📊 Metrics in Observability</h1>
+    
+    <div class="info">
+        <h2>📌 What is a Metric?</h2>
+        <p>A <strong>metric</strong> is a numeric value collected over time that helps you monitor and understand the health, performance, and availability of systems.</p>
+        <p>Each metric typically has:</p>
+        <ul>
+            <li>A <strong>name</strong> (e.g., <code>cpu_usage</code>)</li>
+            <li>A <strong>timestamp</strong></li>
+            <li>A <strong>value</strong> (e.g., <code>75.5%</code>)</li>
+            <li>Optional <strong>labels/tags</strong> (e.g., <code>server="web01"</code>)</li>
+        </ul>
+    </div>
+
+    <div class="info">
+        <h2>📦 Examples of Useful Metrics</h2>
+
+        <h3>🛒 Application Metrics (E-commerce)</h3>
+        <ul>
+            <li>✅ <strong>Orders per second</strong></li>
+            <li>⚡ <strong>API response time (latency)</strong></li>
+            <li>📦 <strong>Inventory levels</strong></li>
+            <li>💳 <strong>Payment success rate</strong></li>
+        </ul>
+
+        <h3>🖥️ Server & Infrastructure Metrics</h3>
+        <ul>
+            <li>🔥 <strong>CPU Usage</strong> – Tracks processor load (e.g., <code>node_cpu_seconds_total</code>)</li>
+            <li>🧠 <strong>Memory Usage</strong> – Amount of memory used/free</li>
+            <li>💽 <strong>Disk I/O</strong> – Read/write throughput on disk</li>
+            <li>🌐 <strong>Network Traffic</strong> – Ingress and egress bytes</li>
+            <li>📉 <strong>Service Uptime</strong> – Whether a service is running or not</li>
+            <li>📊 <strong>Number of Active Connections</strong> – e.g., to a DB or API</li>
+        </ul>
+    </div>
+
+    <div class="info">
+        <h2>🚀 Manage Prometheus + Grafana Stack</h2>
+        <p>This will use the stack from <code>https://github.com/arunvel1988/Prometheus-docker</code>.</p>
+        <a class="install-btn" href="/metrics/install">Install Metrics Stack</a>
+        <a class="install-btn" href="/metrics/delete">Delete Metrics Stack</a>
+        <a class="install-btn" href="/metrics/status">Metrics Stack Status</a>
+        <a class="install-btn" href="/observability">← Back to Observability</a>
+        <a class="install-btn" href="/">🏠 Home</a>
+    </div>
+</body>
+</html>
+

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>System Prerequisites</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f6f8;
+            color: #333;
+            padding: 50px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #007bff;
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 30px;
+        }
+
+        th, td {
+            padding: 14px;
+            border: 1px solid #ccc;
+            text-align: left;
+        }
+
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        .btn-back {
+            margin-top: 30px;
+            display: inline-block;
+            padding: 12px 25px;
+            background-color: #6c757d;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-back:hover {
+            background-color: #5a6268;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧰 System Prerequisites</h1>
+        <p>Detected OS: <strong>{{ os_family }}</strong></p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Component</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for tool, status in results.items() %}
+                    <tr>
+                        <td>{{ tool }}</td>
+                        <td>{{ status }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <a class="btn" href="/install_portainer">✅ Install Portainer</a>
+        <a class="btn-back" href="/">⬅ Back to Home</a>
+        
+    </div>
+</body>
+</html>

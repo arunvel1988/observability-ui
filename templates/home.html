@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Observability Playground</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to right, #e8f0fe, #f3e5f5);
+      color: #333;
+      padding: 50px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background-color: #ffffff;
+      padding: 40px;
+      border-radius: 15px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease-in-out;
+    }
+
+    .container:hover {
+      transform: scale(1.01);
+    }
+
+    h1 {
+      color: #3949ab;
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+
+    h1 span {
+      font-size: 2.8rem;
+    }
+
+    p {
+      font-size: 1.2rem;
+      line-height: 1.7;
+    }
+
+    ul {
+      margin-top: 20px;
+      padding-left: 20px;
+    }
+
+    ul li {
+      margin-bottom: 12px;
+      font-size: 1.1rem;
+    }
+
+    .btn {
+      display: inline-block;
+      margin-top: 30px;
+      padding: 14px 30px;
+      font-size: 1.1rem;
+      background: linear-gradient(to right, #5c6bc0, #3949ab);
+      color: #fff;
+      text-decoration: none;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      transition: background 0.3s ease;
+    }
+
+    .btn:hover {
+      background: linear-gradient(to right, #3949ab, #303f9f);
+    }
+
+    .link-docs {
+      display: inline-block;
+      margin-top: 20px;
+      color: #3949ab;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .link-docs:hover {
+      text-decoration: underline;
+    }
+
+    .emoji {
+      font-size: 1.4rem;
+    }
+
+    footer {
+      margin-top: 40px;
+      font-size: 0.9rem;
+      color: #666;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1><span>📊</span> Observability Playground</h1>
+    <p>Welcome to your dedicated <strong>Observability & Monitoring lab</strong>! This interactive playground helps you explore essential tools with a single click:</p>
+
+    <ul>
+      <li>📦 Learn core concepts of <strong>Monitoring, Logging, and Tracing</strong></li>
+      <li>📈 Explore tools like <code>Prometheus</code>, <code>Grafana</code>, <code>Loki</code>, and <code>Jaeger</code></li>
+      <li>🛠️ Practice setting up alerting rules, dashboards, and time series queries</li>
+      <li>🔍 Visualize metrics from <strong>Kubernetes, Docker, or Linux hosts</strong></li>
+      <li>⚙️ Generate demo load and test system reliability with logs and traces</li>
+    </ul>
+
+    <a class="link-docs" href="https://opentelemetry.io/docs/" target="_blank">📖 OpenTelemetry & Observability Docs</a><br>
+
+    <a class="btn" href="/pre-req">🔧 Check Lab Prerequisites</a>
+  </div>
+</body>
+</html>
+

@@ -1,0 +1,61 @@
+<!-- templates/delete_metrics.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Metrics Stack Deleted</title>
+    <style>
+        body {
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f9f9f9;
+            text-align: center;
+            padding-top: 60px;
+            color: #333;
+        }
+
+        .status-container {
+            background-color: #fff;
+            padding: 40px;
+            border-radius: 12px;
+            max-width: 500px;
+            margin: auto;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            font-size: 28px;
+            color: #c62828;
+        }
+
+        .icon {
+            font-size: 64px;
+            color: #e53935;
+            margin-bottom: 20px;
+        }
+
+        a {
+            display: inline-block;
+            margin-top: 30px;
+            padding: 12px 20px;
+            background-color: #1976d2;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: background-color 0.3s;
+        }
+
+        a:hover {
+            background-color: #0d47a1;
+        }
+    </style>
+</head>
+<body>
+    <div class="status-container">
+        <div class="icon">🗑️</div>
+        <h1>Metrics Stack Deleted</h1>
+        <p>The Prometheus + Grafana stack has been successfully stopped and removed.</p>
+        <a href="/metrics">⬅️ Back to Metrics Menu</a>
+    </div>
+</body>
+</html>
+
