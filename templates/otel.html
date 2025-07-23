@@ -14,11 +14,12 @@
             text-decoration: none;
             border-radius: 5px;
             margin-right: 10px;
+            margin-top: 10px;
         }
         .install-btn:hover {
             background-color: #2980b9;
         }
-        ul li { margin: 6px 0; }
+        ul li { margin: 10px 0; }
         code { background-color: #e1ecf4; padding: 2px 5px; border-radius: 3px; }
     </style>
 </head>
@@ -45,10 +46,21 @@
     <div class="info">
         <h2>🛠 Components of OpenTelemetry</h2>
         <ul>
-            <li>📡 <strong>Instrumentation libraries</strong> - To generate traces, metrics, logs from your code</li>
-            <li>🚦 <strong>SDKs</strong> - Configure and control telemetry data collection</li>
-            <li>📥 <strong>Collector</strong> - A vendor-agnostic agent/daemon to receive, process, and export telemetry data</li>
-            <li>📤 <strong>Exporters</strong> - Send data to backend systems like Jaeger, Prometheus, OpenSearch, etc.</li>
+            <li>📡 <strong>Instrumentation Libraries</strong><br>
+                These are language-specific libraries that you add to your application code to generate telemetry data like traces, metrics, and logs automatically or manually.
+            </li>
+            <li>🚦 <strong>SDKs</strong><br>
+                Software Development Kits that configure how telemetry data is collected, sampled, and exported from your applications. They provide APIs and tools tailored for different languages.
+            </li>
+            <li>📥 <strong>Collector</strong><br>
+                A standalone, vendor-agnostic agent or gateway that receives telemetry data from instrumented applications, processes it (e.g., batching, filtering, transforming), and exports it to backend systems.
+            </li>
+            <li>📤 <strong>Exporters</strong><br>
+                Components that send telemetry data from the Collector or SDKs to various observability backends such as Jaeger, Prometheus, OpenSearch, or commercial APM platforms.
+            </li>
+            <li>🔗 <strong>Context Propagation</strong><br>
+                Mechanisms that pass tracing context across service boundaries, enabling distributed tracing across microservices and different components.
+            </li>
         </ul>
     </div>
 
@@ -61,9 +73,9 @@
     <div class="info">
         <h2>Install OpenTelemetry Collector</h2>
         <p>You can install from <code>https://github.com/open-telemetry/opentelemetry-collector-releases</code> or use pre-built docker images.</p>
-        <a class="install-btn" href="/otel/install">Install OTel Collector</a>
-        <a class="install-btn" href="/otel/delete">Delete OTel Collector</a>
-        <a class="install-btn" href="/otel/status">OTel Collector Status</a>
+        <a class="install-btn" href="/otel/install">Install OTel</a>
+        <a class="install-btn" href="/otel/delete">Delete OTel</a>
+        <a class="install-btn" href="/otel/status">OTel Status</a>
         <a class="install-btn" href="/observability">Observability Home</a>
         <a class="install-btn" href="/">Home</a>
     </div>
