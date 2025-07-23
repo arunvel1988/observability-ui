@@ -40,20 +40,34 @@
         <thead>
             <tr>
                 <th>Service Name</th>
-                <th>Exposed Ports (Clickable)</th>
+                <th>Access URL</th>
             </tr>
         </thead>
         <tbody>
-            {% for name, ports in services %}
             <tr>
-                <td>{{ name }}</td>
-                <td>
-                    {% for port in ports %}
-                        <a href="http://localhost:{{ port }}" target="_blank">localhost:{{ port }}</a>{% if not loop.last %}, {% endif %}
-                    {% endfor %}
-                </td>
+                <td>Web Store</td>
+                <td><a href="http://localhost:8080/" target="_blank">http://localhost:8080/</a></td>
             </tr>
-            {% endfor %}
+            <tr>
+                <td>Grafana</td>
+                <td><a href="http://localhost:8080/grafana/" target="_blank">http://localhost:8080/grafana/</a></td>
+            </tr>
+            <tr>
+                <td>Load Generator UI</td>
+                <td><a href="http://localhost:8080/loadgen/" target="_blank">http://localhost:8080/loadgen/</a></td>
+            </tr>
+            <tr>
+                <td>Jaeger UI</td>
+                <td><a href="http://localhost:8080/jaeger/ui/" target="_blank">http://localhost:8080/jaeger/ui/</a></td>
+            </tr>
+            <tr>
+                <td>Tracetest UI</td>
+                <td><a href="http://localhost:11633/" target="_blank">http://localhost:11633/</a></td>
+            </tr>
+            <tr>
+                <td>Flagd Configurator UI</td>
+                <td><a href="http://localhost:8080/feature" target="_blank">http://localhost:8080/feature</a></td>
+            </tr>
         </tbody>
     </table>
 
