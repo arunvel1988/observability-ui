@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Observability - OpenTelemetry (OTel)</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 30px; background-color: #f0f8ff; }
+        h1 { color: #2c3e50; }
+        .info { margin-top: 20px; }
+        .install-btn {
+            display: inline-block;
+            padding: 10px 15px;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+        .install-btn:hover {
+            background-color: #2980b9;
+        }
+        ul li { margin: 6px 0; }
+        code { background-color: #e1ecf4; padding: 2px 5px; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <h1>🔍 What is OpenTelemetry (OTel)?</h1>
+    
+    <div class="info">
+        <p><strong>OpenTelemetry (OTel)</strong> is an open-source observability framework for cloud-native software.</p>
+        <p>It provides APIs, SDKs, and tools to collect <strong>traces</strong>, <strong>metrics</strong>, and <strong>logs</strong> from applications and infrastructure.</p>
+        <p>OTel helps developers and operators understand system behavior, troubleshoot issues, and improve performance.</p>
+    </div>
+
+    <div class="info">
+        <h2>📦 Why Use OpenTelemetry?</h2>
+        <ul>
+            <li>💡 Standardizes how telemetry data is collected and transmitted</li>
+            <li>🔌 Supports multiple programming languages and platforms</li>
+            <li>⚙️ Integrates with many backends like Jaeger, Prometheus, OpenSearch, and commercial APMs</li>
+            <li>🔍 Provides rich context to connect traces, metrics, and logs</li>
+            <li>🌐 Designed for microservices, distributed systems, and cloud-native apps</li>
+        </ul>
+    </div>
+
+    <div class="info">
+        <h2>🛠 Components of OpenTelemetry</h2>
+        <ul>
+            <li>📡 <strong>Instrumentation libraries</strong> - To generate traces, metrics, logs from your code</li>
+            <li>🚦 <strong>SDKs</strong> - Configure and control telemetry data collection</li>
+            <li>📥 <strong>Collector</strong> - A vendor-agnostic agent/daemon to receive, process, and export telemetry data</li>
+            <li>📤 <strong>Exporters</strong> - Send data to backend systems like Jaeger, Prometheus, OpenSearch, etc.</li>
+        </ul>
+    </div>
+
+    <div class="info">
+        <h2>🔗 How OpenTelemetry Works</h2>
+        <p>Apps instrumented with OTel SDKs produce telemetry data → sent to the OpenTelemetry Collector → Collector processes and exports data → Observability backends visualize it.</p>
+        <p>This allows you to monitor and troubleshoot your distributed apps with unified data.</p>
+    </div>
+
+    <div class="info">
+        <h2>Install OpenTelemetry Collector</h2>
+        <p>You can install from <code>https://github.com/open-telemetry/opentelemetry-collector-releases</code> or use pre-built docker images.</p>
+        <a class="install-btn" href="/otel/install">Install OTel Collector</a>
+        <a class="install-btn" href="/otel/delete">Delete OTel Collector</a>
+        <a class="install-btn" href="/otel/status">OTel Collector Status</a>
+        <a class="install-btn" href="/observability">Observability Home</a>
+        <a class="install-btn" href="/">Home</a>
+    </div>
+</body>
+</html>

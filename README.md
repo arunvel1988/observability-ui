@@ -1,2 +1,2 @@
-# windows-ui
-windows-ui
+# observability-ui
+observability-ui

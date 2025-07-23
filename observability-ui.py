@@ -347,8 +347,60 @@ def traces_status():
  
  
 
+
 ##########################################logs ####################################################################################
 
+
+##########################################OTEL (OPEN TELEMETRY) ################################################
+
+@app.route("/otel")
+def otel_landing():
+    return render_template("otel.html")
+
+    
+REPO_URL_OTEL = "https://github.com/arunvel1988/opentelemetry-demo"
+REPO_DIR_OTEL = "opentelemetry-demo"
+
+@app.route("/otel/install")
+def install_otel_stack():
+    if not os.path.exists(REPO_DIR_OTEL):
+        subprocess.run(["git", "clone", REPO_URL_OTEL])
+
+    subprocess.run(["docker-compose", "up", "-d", "--build"], cwd=REPO_DIR_OTEL)
+    return render_template("install_otel.html")
+
+@app.route("/otel/delete")
+def delete_otel_stack():
+    if os.path.exists(REPO_DIR_OTEL):
+        subprocess.run(["docker-compose", "down"], cwd=REPO_DIR_OTEL)
+    return render_template("delete_otel.html")
+
+@app.route("/otel/status")
+def otel_status():
+    try:
+        output = subprocess.check_output([
+            "docker", "ps", "--format", "{{.Names}}|{{.Ports}}"
+        ]).decode("utf-8").splitlines()
+
+        services = []
+        for line in output:
+            name, ports = line.split("|", 1)
+            exposed_ports = []
+
+            for port_map in ports.split(","):
+                port_map = port_map.strip()
+                if "->" in port_map and ":" in port_map:
+                    host_port = port_map.split("->")[0].split(":")[-1]
+                    exposed_ports.append(host_port)
+
+            services.append((name, exposed_ports))
+    except subprocess.CalledProcessError:
+        services = []
+
+    return render_template("status_otel.html", services=services)
+ 
+
+###################################################################################################################
 
 
 if __name__ == "__main__":
