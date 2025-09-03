@@ -295,7 +295,62 @@ def logs_status():
 
     return render_template("status_logs.html", services=services)
  
- 
+ ##########################################################################################################
+# loki logs ################################################
+
+@app.route("/loki/install")
+def install_loki_stack():
+    if not os.path.exists(REPO_DIR_LOGS):
+        subprocess.run(["git", "clone", REPO_URL_LOGS])
+    subprocess.run(["mkdir", "-p", "./loki_data/index"], cwd=REPO_DIR_LOGS)
+    subprocess.run(["mkdir", "-p", "./loki_data/cache"], cwd=REPO_DIR_LOGS)
+    subprocess.run(["mkdir", "-p", "./loki_data/chunks"], cwd=REPO_DIR_LOGS)
+    subprocess.run(["mkdir", "-p", "./loki_data/compactor"], cwd=REPO_DIR_LOGS)
+    subprocess.run(["mkdir", "-p", "./loki_data/wal"], cwd=REPO_DIR_LOGS)
+
+    # Change ownership to Loki user (UID 10001)
+    subprocess.run(["sudo", "chown", "-R", "10001:10001", "./loki_data"], cwd=REPO_DIR_LOGS)
+
+    # Set permissions
+    subprocess.run(["sudo", "chmod", "-R", "775", "./loki_data"], cwd=REPO_DIR_LOGS)
+
+    # Start Loki + Grafana with docker-compose
+    subprocess.run(
+        ["docker-compose", "-f", "docker-compose-grafana-loki.yml", "up", "-d", "--build"],
+        cwd=REPO_DIR_LOGS
+    )
+
+    return render_template("install_loki.html")
+
+@app.route("/loki/delete")
+def delete_loki_stack():
+    if os.path.exists(REPO_DIR_LOGS):
+        subprocess.run(["docker-compose", "down"], cwd=REPO_DIR_LOGS)
+    return render_template("delete_loki.html")
+
+@app.route("/loki/status")
+def logs_status():
+    try:
+        output = subprocess.check_output([
+            "docker", "ps", "--format", "{{.Names}}|{{.Ports}}"
+        ]).decode("utf-8").splitlines()
+
+        services = []
+        for line in output:
+            name, ports = line.split("|", 1)
+            exposed_ports = []
+
+            for port_map in ports.split(","):
+                port_map = port_map.strip()
+                if "->" in port_map and ":" in port_map:
+                    host_port = port_map.split("->")[0].split(":")[-1]
+                    exposed_ports.append(host_port)
+
+            services.append((name, exposed_ports))
+    except subprocess.CalledProcessError:
+        services = []
+
+    return render_template("status_loki.html", services=services)
 
 ##########################################logs ####################################################################################
     
