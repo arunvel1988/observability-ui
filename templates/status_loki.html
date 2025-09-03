@@ -1,0 +1,67 @@
+<!-- templates/status_loki.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Loki Stack Status</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        table {
+            width: 60%;
+            margin: 40px auto;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ccc;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        a {
+            color: blue;
+            text-decoration: none;
+        }
+        .nav-links {
+            text-align: center;
+            margin-top: 30px;
+        }
+        .nav-links a {
+            margin: 0 15px;
+            font-weight: bold;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <h2 style="text-align:center;">📊 Loki Stack Services</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Service Name</th>
+                <th>Exposed Ports (Clickable)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for name, ports in services %}
+            <tr>
+                <td>{{ name }}</td>
+                <td>
+                    {% for port in ports %}
+                        <a href="http://localhost:{{ port }}" target="_blank">localhost:{{ port }}</a>{% if not loop.last %}, {% endif %}
+                    {% endfor %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="nav-links">
+        <a href="/logs">⬅️ Back to Logs</a>
+        <a href="/observability">⬅️ Back to Observability</a>
+        <a href="/">🏠 Home</a>
+    </div>
+</body>
+</html>
