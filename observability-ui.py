@@ -250,7 +250,7 @@ def logs_landing():
     return render_template("logs.html")
 
 @app.route("/logs/loki")
-def logs_landing():
+def loki_landing():
     return render_template("loki.html")
     
 REPO_URL_LOGS = "https://github.com/arunvel1988/elk-devops-demo"
