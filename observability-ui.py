@@ -335,7 +335,7 @@ def delete_loki_stack():
 
 
 @app.route("/loki/status")
-def logs_status():
+def loki_status():
     try:
         output = subprocess.check_output([
             "docker", "ps", "--format", "{{.Names}}|{{.Ports}}"
