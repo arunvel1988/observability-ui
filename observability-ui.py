@@ -248,6 +248,10 @@ def metrics_status():
 @app.route("/logs")
 def logs_landing():
     return render_template("logs.html")
+
+@app.route("/logs/loki")
+def logs_landing():
+    return render_template("loki.html")
     
 REPO_URL_LOGS = "https://github.com/arunvel1988/elk-devops-demo"
 REPO_DIR_LOGS = "elk-devops-demo"
