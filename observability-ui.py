@@ -322,11 +322,17 @@ def install_loki_stack():
 
     return render_template("install_loki.html")
 
+
 @app.route("/loki/delete")
 def delete_loki_stack():
     if os.path.exists(REPO_DIR_LOGS):
-        subprocess.run(["docker-compose", "down"], cwd=REPO_DIR_LOGS)
+        subprocess.run(
+            ["docker-compose", "-f", "docker-compose-grafana-loki.yml", "down", "--remove-orphans"],
+            cwd=REPO_DIR_LOGS
+        )
     return render_template("delete_loki.html")
+
+
 
 @app.route("/loki/status")
 def logs_status():
