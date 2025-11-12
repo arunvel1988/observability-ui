@@ -7,7 +7,7 @@ echo "🔍 Checking if python3-venv is installed..."
 if ! dpkg -s python3-venv >/dev/null 2>&1; then
     echo "python3-venv not found. Installing..."
     sudo apt update
-    sudo apt install -y python3-venv
+    sudo apt install -y python3-venv docker.io curl jq
     echo "python3-venv installed."
 else
     echo "python3-venv is already installed."
