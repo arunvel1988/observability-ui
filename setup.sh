@@ -7,7 +7,7 @@ echo "Checking if python3-venv and docker.io are installed..."
 if ! dpkg -s python3-venv >/dev/null 2>&1 || ! dpkg -s docker.io >/dev/null 2>&1; then
     echo "Installing python3-venv and docker.io..."
     sudo apt update
-    sudo apt install -y python3-venv docker.io curl jq python3-pip -y
+    sudo apt install -y python3-venv docker.io python3-setuptools curl jq python3-pip -y
     echo "python3-venv and docker.io installed."
 else
     echo "python3-venv and docker.io are already installed."
