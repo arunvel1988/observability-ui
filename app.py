@@ -417,6 +417,11 @@ def traces_status():
 ##################### k8s lgtm ####################################################
 
 
+@app.route("/k8s")
+def k8s_landing():
+    return render_template("k8s.html")
+
+
 REPO_DIR_UI = "kubernetes/alloy"
 
 # ------------------------------------------------------------
