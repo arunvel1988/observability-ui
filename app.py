@@ -475,10 +475,10 @@ def list_yaml_files():
 # ------------------------------------------------------------
 # View & Apply/Delete Individual Files
 # ------------------------------------------------------------
-##@app.route("/k8s/files")
-#def view_k8s_files():
-##    files = list_yaml_files()
-##    return render_template("view_files.html", files=files)
+@app.route("/k8s/files")
+def view_k8s_files():
+    files = list_yaml_files()
+    return render_template("view_files.html", files=files)
 
 
 @app.route("/k8s/view", methods=["GET"])
