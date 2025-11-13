@@ -422,29 +422,33 @@ def k8s_landing():
     return render_template("k8s.html")
 
 
-REPO_DIR_UI = "kubernetes/alloy"
+
+
+# ------------------------------------------------------------
+# Constants
+# ------------------------------------------------------------
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+REPO_DIR_UI = os.path.join(BASE_DIR, "kubernetes/alloy")
 
 # ------------------------------------------------------------
 # Utility Functions
 # ------------------------------------------------------------
-
 def apply_k8s_files(file_range):
     """Apply YAMLs from a numeric range (e.g., 1–6)."""
-    os.chdir(REPO_DIR_UI)
-    subprocess.run(["kubectl", "apply", "-f", "1_namespace.yaml"], check=False)
+    subprocess.run(["kubectl", "apply", "-f", f"{REPO_DIR_UI}/1_namespace.yaml"], check=False)
     for i in file_range:
-        yaml_pattern = f"{i}_*.yaml"
+        yaml_pattern = f"{REPO_DIR_UI}/{i}_*.yaml"
         subprocess.run(["bash", "-c", f"kubectl apply -f {yaml_pattern}"], check=False)
-    os.chdir("../../..")
 
 
 def delete_k8s_files(file_range):
     """Delete YAMLs from a numeric range."""
-    os.chdir(REPO_DIR_UI)
     for i in file_range:
-        yaml_pattern = f"{i}_*.yaml"
-        subprocess.run(["bash", "-c", f"kubectl delete -f {yaml_pattern} --ignore-not-found"], check=False)
-    os.chdir("../../..")
+        yaml_pattern = f"{REPO_DIR_UI}/{i}_*.yaml"
+        subprocess.run(
+            ["bash", "-c", f"kubectl delete -f {yaml_pattern} --ignore-not-found"],
+            check=False
+        )
 
 
 def get_k8s_status(namespace="logging"):
@@ -467,16 +471,13 @@ def list_yaml_files():
     files = sorted(glob.glob(os.path.join(REPO_DIR_UI, "*.yaml")))
     return [os.path.basename(f) for f in files]
 
-
 # ------------------------------------------------------------
 # View & Apply/Delete Individual Files
 # ------------------------------------------------------------
-
 @app.route("/k8s/files")
 def view_k8s_files():
     files = list_yaml_files()
     return render_template("view_files.html", files=files)
-
 
 @app.route("/k8s/apply", methods=["POST"])
 def apply_single_file():
@@ -485,8 +486,7 @@ def apply_single_file():
         return "No file specified"
     file_path = os.path.join(REPO_DIR_UI, filename)
     output = subprocess.getoutput(f"kubectl apply -f {file_path}")
-    return f"<h3>Applied: {filename}</h3><pre>{output}</pre><a href='/k8s/files'>⬅️ Back</a>"
-
+    return f"<h3>✅ Applied: {filename}</h3><pre>{output}</pre><a href='/k8s/files'>⬅️ Back</a>"
 
 @app.route("/k8s/delete", methods=["POST"])
 def delete_single_file():
@@ -495,31 +495,26 @@ def delete_single_file():
         return "No file specified"
     file_path = os.path.join(REPO_DIR_UI, filename)
     output = subprocess.getoutput(f"kubectl delete -f {file_path} --ignore-not-found")
-    return f"<h3>Deleted: {filename}</h3><pre>{output}</pre><a href='/k8s/files'>⬅️ Back</a>"
-
+    return f"<h3>🗑️ Deleted: {filename}</h3><pre>{output}</pre><a href='/k8s/files'>⬅️ Back</a>"
 
 # ------------------------------------------------------------
 # Stack Management Endpoints
 # ------------------------------------------------------------
-
 # --------------- NORMAL LOGS ------------------
 @app.route("/k8s/logs/install")
 def install_normal_logs():
     apply_k8s_files(range(1, 7))
     return render_template("install_logs.html")
 
-
 @app.route("/k8s/logs/delete")
 def delete_normal_logs():
     delete_k8s_files(range(1, 7))
     return render_template("delete_logs.html")
 
-
 @app.route("/k8s/logs/status")
 def status_normal_logs():
     pods, svcs = get_k8s_status()
     return render_template("status_logs.html", pods=pods, svcs=svcs)
-
 
 # --------------- OTEL LOGS ------------------
 @app.route("/k8s/otel/logs/install")
@@ -527,18 +522,15 @@ def install_otel_logs():
     apply_k8s_files(range(7, 11))
     return render_template("install_otel_logs.html")
 
-
 @app.route("/k8s/otel/logs/delete")
 def delete_otel_logs():
     delete_k8s_files(range(7, 11))
     return render_template("delete_otel_logs.html")
 
-
 @app.route("/k8s/otel/logs/status")
 def status_otel_logs():
     pods, svcs = get_k8s_status()
     return render_template("status_otel_logs.html", pods=pods, svcs=svcs)
-
 
 # --------------- OTEL TRACES ------------------
 @app.route("/k8s/otel/traces/install")
@@ -546,18 +538,15 @@ def install_otel_traces():
     apply_k8s_files(range(11, 16))
     return render_template("install_otel_traces.html")
 
-
 @app.route("/k8s/otel/traces/delete")
 def delete_otel_traces():
     delete_k8s_files(range(11, 16))
     return render_template("delete_otel_traces.html")
 
-
 @app.route("/k8s/otel/traces/status")
 def status_otel_traces():
     pods, svcs = get_k8s_status()
     return render_template("status_otel_traces.html", pods=pods, svcs=svcs)
-
 
 # --------------- OTEL LGTM ------------------
 @app.route("/k8s/otel/lgtm/install")
@@ -565,17 +554,17 @@ def install_otel_lgtm():
     apply_k8s_files(range(16, 21))
     return render_template("install_otel_lgtm.html")
 
-
 @app.route("/k8s/otel/lgtm/delete")
 def delete_otel_lgtm():
     delete_k8s_files(range(16, 21))
     return render_template("delete_otel_lgtm.html")
 
-
 @app.route("/k8s/otel/lgtm/status")
 def status_otel_lgtm():
     pods, svcs = get_k8s_status()
     return render_template("status_otel_lgtm.html", pods=pods, svcs=svcs)
+
+
 
 
 
