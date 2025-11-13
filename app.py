@@ -439,7 +439,7 @@ def delete_k8s_stack():
     return render_template("delete_traces.html")
 
 @app.route("/k8s/status")
-def traces_status():
+def k8s_status():
     try:
         output = subprocess.check_output([
             "docker", "ps", "--format", "{{.Names}}|{{.Ports}}"
