@@ -14,11 +14,14 @@
             color: white;
             cursor: pointer;
             border-radius: 5px;
+            font-size: 14px;
         }
-        .apply { background-color: #4caf50; }
-        .delete { background-color: #f44336; }
+        .view { background-color: #2196f3; }   /* Blue */
+        .apply { background-color: #4caf50; }  /* Green */
+        .delete { background-color: #f44336; } /* Red */
         .nav { text-align: center; margin-top: 20px; }
         .nav a { margin: 0 15px; color: #007bff; text-decoration: none; }
+        .nav a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
@@ -33,10 +36,16 @@
         <tr>
             <td>{{ file }}</td>
             <td>
+                <!-- 👁 View Button -->
+                <a href="/k8s/view?filename={{ file }}" class="btn view">View</a>
+
+                <!-- ✅ Apply Button -->
                 <form method="post" action="/k8s/apply">
                     <input type="hidden" name="filename" value="{{ file }}">
                     <button type="submit" class="btn apply">Apply</button>
                 </form>
+
+                <!-- 🗑 Delete Button -->
                 <form method="post" action="/k8s/delete">
                     <input type="hidden" name="filename" value="{{ file }}">
                     <button type="submit" class="btn delete">Delete</button>
