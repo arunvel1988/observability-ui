@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Stack Status</title>
+    <style>
+        body { font-family: monospace; margin: 40px; background-color: #f7fcff; }
+        pre { background: #eef3fb; padding: 15px; border-radius: 8px; overflow-x: auto; }
+        h2 { color: #2c3e50; }
+    </style>
+</head>
+<body>
+    <h2>📊 Stack - Pod & Service Status</h2>
+
+    <h3>Pods:</h3>
+    <pre>{{ pods }}</pre>
+
+    <h3>Services:</h3>
+    <pre>{{ svcs }}</pre>
+
+    <a href="/k8s/files">View YAML Files</a> |
+    <a href="/">🏠 Home</a>
+</body>
+</html>
