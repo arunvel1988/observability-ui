@@ -1,0 +1,145 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: loki
+  namespace: logging
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: loki
+  template:
+    metadata:
+      labels:
+        app: loki
+    spec:
+      containers:
+        - name: loki
+          image: grafana/loki:3.5.2
+          args:
+            - "-config.file=/etc/loki/config.yaml"
+          ports:
+            - containerPort: 3100
+              name: http
+          volumeMounts:
+            - name: loki-config
+              mountPath: /etc/loki
+            - name: loki-data
+              mountPath: /tmp/loki
+      volumes:
+        - name: loki-config
+          configMap:
+            name: loki-config
+        - name: loki-data
+          emptyDir: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: loki
+  namespace: logging
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 3100
+      targetPort: 3100
+      protocol: TCP
+  selector:
+    app: loki
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: loki-config
+  namespace: logging
+data:
+  config.yaml: |
+    auth_enabled: false
+    
+    server:
+      http_listen_port: 3100
+      grpc_listen_port: 9096
+      log_level: info
+    
+    common:
+      path_prefix: /tmp/loki
+      storage:
+        filesystem:
+          chunks_directory: /tmp/loki/chunks
+          rules_directory: /tmp/loki/rules
+      replication_factor: 1
+      ring:
+        instance_addr: 127.0.0.1
+        kvstore:
+          store: inmemory
+    
+    ingester:
+      wal:
+        enabled: true
+        dir: /tmp/loki/wal
+      lifecycler:
+        address: 127.0.0.1
+        ring:
+          kvstore:
+            store: inmemory
+          replication_factor: 1
+      chunk_idle_period: 5m
+      max_chunk_age: 1h
+      chunk_retain_period: 30s
+    
+    distributor:
+      ring:
+        kvstore:
+          store: inmemory
+    
+    memberlist:
+      join_members:
+        - loki:7946
+    
+    schema_config:
+      configs:
+        - from: 2024-01-01
+          store: tsdb
+          object_store: filesystem
+          schema: v13
+          index:
+            prefix: index_
+            period: 24h
+    
+    storage_config:
+      tsdb_shipper:
+        active_index_directory: /tmp/loki/tsdb-index
+        cache_location: /tmp/loki/tsdb-cache
+      filesystem:
+        directory: /tmp/loki/chunks
+    
+    limits_config:
+      ingestion_rate_mb: 10
+      ingestion_burst_size_mb: 20
+      max_cache_freshness_per_query: 10m
+      retention_period: 168h
+      allow_structured_metadata: true
+      reject_old_samples: false
+      reject_old_samples_max_age: 168h
+    
+    compactor:
+      working_directory: /tmp/loki/compactor
+      retention_enabled: true
+      retention_delete_delay: 2h
+      retention_delete_worker_count: 150
+      delete_request_store: filesystem
+    
+    ruler:
+      storage:
+        type: local
+        local:
+          directory: /tmp/loki/rules
+      ring:
+        kvstore:
+          store: inmemory
+      rule_path: /tmp/loki/rules-temp
+      alertmanager_url: http://localhost:9093
+      enable_api: true

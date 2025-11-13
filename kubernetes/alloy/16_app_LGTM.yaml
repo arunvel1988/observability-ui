@@ -1,0 +1,393 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logs-traces-metrics-otel-demo
+  namespace: logging
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: logs-traces-metrics-otel-demo
+  template:
+    metadata:
+      labels:
+        app: logs-traces-metrics-otel-demo
+    spec:
+      containers:
+        - name: logs-traces-metrics-otel-demo
+          image: python:3.11-slim
+          command: ["sh", "-c", "pip install -r /requirements.txt && python3 /main.py"]
+          env:
+            # Primary endpoint for logs, traces, and metrics
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "http://alloy:4317"
+            - name: OTEL_SERVICE_NAME
+              value: "otel-demo-service"
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: "service.namespace=logging,environment=kind-lab,service.version=1.0.0"
+          volumeMounts:
+            - name: script
+              mountPath: /main.py
+              subPath: main.py
+            - name: requirements
+              mountPath: /requirements.txt
+              subPath: requirements.txt
+      volumes:
+        - name: script
+          configMap:
+            name: logs-traces-metrics-otel-script
+        - name: requirements
+          configMap:
+            name: logs-traces-metrics-otel-requirements
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: logs-traces-metrics-otel-script
+  namespace: logging
+data:
+  main.py: |
+    import time
+    import random
+    import logging
+    import os
+    from opentelemetry import trace, metrics
+    from opentelemetry._logs import set_logger_provider
+    from opentelemetry.exporter.otlp.proto.grpc._log_exporter import OTLPLogExporter
+    from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+    from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import OTLPMetricExporter
+    from opentelemetry.sdk._logs import LoggerProvider, LoggingHandler
+    from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
+    from opentelemetry.sdk.trace import TracerProvider
+    from opentelemetry.sdk.trace.export import BatchSpanProcessor
+    from opentelemetry.sdk.metrics import MeterProvider
+    from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
+    from opentelemetry.sdk.resources import Resource
+
+    def setup_otel():
+        """Initialize logging, tracing, and metrics with OTEL"""
+        
+        # Get configuration from environment
+        otel_endpoint = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://alloy:4317")
+        service_name = os.getenv("OTEL_SERVICE_NAME", "otel-demo-service")
+        
+        print("=" * 60)
+        print("Initializing OpenTelemetry (Logs + Traces + Metrics)")
+        print("=" * 60)
+        print(f"Endpoint:     {otel_endpoint}")
+        print(f"Service Name: {service_name}")
+        print("=" * 60)
+        
+        # Create shared resource
+        resource = Resource.create({
+            "service.name": service_name,
+            "service.instance.id": f"{service_name}-{random.randint(1000,9999)}",
+            "service.version": "1.0.0",
+            "deployment.environment": os.getenv("ENVIRONMENT", "kind-lab"),
+        })
+        
+        # === Setup Logging ===
+        try:
+            logger_provider = LoggerProvider(resource=resource)
+            set_logger_provider(logger_provider)
+            
+            log_exporter = OTLPLogExporter(
+                endpoint=otel_endpoint,
+                insecure=True
+            )
+            
+            logger_provider.add_log_record_processor(
+                BatchLogRecordProcessor(log_exporter)
+            )
+            
+            handler = LoggingHandler(
+                level=logging.NOTSET,
+                logger_provider=logger_provider
+            )
+            
+            logging.basicConfig(level=logging.INFO)
+            logging.getLogger().addHandler(handler)
+            
+            print("OTEL Logging initialized")
+            
+        except Exception as e:
+            print(f"Failed to initialize OTEL logging: {e}")
+            logging.basicConfig(level=logging.INFO)
+        
+        # === Setup Tracing ===
+        try:
+            tracer_provider = TracerProvider(resource=resource)
+            trace.set_tracer_provider(tracer_provider)
+            
+            trace_exporter = OTLPSpanExporter(
+                endpoint=otel_endpoint,
+                insecure=True
+            )
+            
+            tracer_provider.add_span_processor(
+                BatchSpanProcessor(trace_exporter)
+            )
+            
+            print("OTEL Tracing initialized")
+            
+        except Exception as e:
+            print(f"Failed to initialize OTEL tracing: {e}")
+        
+        # === Setup Metrics ===
+        try:
+            metric_exporter = OTLPMetricExporter(
+                endpoint=otel_endpoint,
+                insecure=True
+            )
+            
+            metric_reader = PeriodicExportingMetricReader(
+                exporter=metric_exporter,
+                export_interval_millis=10000  # Export every 10 seconds
+            )
+            
+            meter_provider = MeterProvider(
+                resource=resource,
+                metric_readers=[metric_reader]
+            )
+            
+            metrics.set_meter_provider(meter_provider)
+            
+            print("OTEL Metrics initialized")
+            
+        except Exception as e:
+            print(f"Failed to initialize OTEL metrics: {e}")
+        
+        print("=" * 60)
+        return (
+            logging.getLogger(__name__),
+            trace.get_tracer(__name__),
+            metrics.get_meter(__name__)
+        )
+
+    # Initialize OTEL
+    logger, tracer, meter = setup_otel()
+
+    # Create metrics instruments
+    request_counter = meter.create_counter(
+        name="requests_total",
+        description="Total number of requests",
+        unit="1"
+    )
+
+    request_duration = meter.create_histogram(
+        name="request_duration_seconds",
+        description="Request duration in seconds",
+        unit="s"
+    )
+
+    active_requests = meter.create_up_down_counter(
+        name="active_requests",
+        description="Number of active requests",
+        unit="1"
+    )
+
+    cache_hit_counter = meter.create_counter(
+        name="cache_hits_total",
+        description="Total cache hits",
+        unit="1"
+    )
+
+    cache_miss_counter = meter.create_counter(
+        name="cache_misses_total",
+        description="Total cache misses",
+        unit="1"
+    )
+
+    db_query_duration = meter.create_histogram(
+        name="db_query_duration_seconds",
+        description="Database query duration",
+        unit="s"
+    )
+
+    error_counter = meter.create_counter(
+        name="errors_total",
+        description="Total number of errors",
+        unit="1"
+    )
+
+    # Simulated operations
+    def simulate_database_query(query_type):
+        """Simulate a database operation"""
+        start_time = time.time()
+        
+        with tracer.start_as_current_span("database.query") as span:
+            span.set_attribute("db.system", "postgresql")
+            span.set_attribute("db.operation", query_type)
+            span.set_attribute("db.statement", f"SELECT * FROM {query_type}_table")
+            
+            # Simulate query time
+            query_time = random.uniform(0.01, 0.3)
+            time.sleep(query_time)
+            
+            rows_returned = random.randint(1, 100)
+            span.set_attribute("db.rows_returned", rows_returned)
+            
+            logger.info(f"Database query executed: {query_type}, returned {rows_returned} rows")
+            
+            # Record metric
+            duration = time.time() - start_time
+            db_query_duration.record(duration, {"db.operation": query_type})
+            
+            return rows_returned
+
+    def simulate_cache_operation():
+        """Simulate cache lookup"""
+        with tracer.start_as_current_span("cache.lookup") as span:
+            cache_key = f"user_{random.randint(100, 999)}"
+            is_hit = random.choice([True, False])
+            
+            span.set_attribute("cache.key", cache_key)
+            span.set_attribute("cache.hit", is_hit)
+            
+            time.sleep(random.uniform(0.001, 0.01))
+            
+            # Record metrics
+            if is_hit:
+                cache_hit_counter.add(1, {"cache.type": "redis"})
+                logger.debug(f"Cache hit for key: {cache_key}")
+            else:
+                cache_miss_counter.add(1, {"cache.type": "redis"})
+                logger.info(f"Cache miss for key: {cache_key}, fetching from DB")
+            
+            return is_hit
+
+    def simulate_external_api_call(api_name):
+        """Simulate calling an external API"""
+        with tracer.start_as_current_span("http.client") as span:
+            span.set_attribute("http.method", "GET")
+            span.set_attribute("http.url", f"https://api.example.com/{api_name}")
+            span.set_attribute("http.target", f"/{api_name}")
+            
+            # Simulate API latency
+            time.sleep(random.uniform(0.1, 0.5))
+            
+            status_code = random.choice([200, 200, 200, 500])
+            span.set_attribute("http.status_code", status_code)
+            
+            if status_code == 200:
+                logger.info(f"External API call successful: {api_name}")
+            else:
+                logger.error(f"External API call failed: {api_name}, status: {status_code}")
+                error_counter.add(1, {
+                    "error.type": "api_error",
+                    "http.status_code": str(status_code)
+                })
+            
+            return status_code == 200
+
+    def process_user_request():
+        """Simulate a complex user request"""
+        start_time = time.time()
+        
+        with tracer.start_as_current_span("process_user_request") as span:
+            user_id = random.randint(1000, 9999)
+            request_type = random.choice(["login", "checkout", "profile_update", "search"])
+            
+            span.set_attribute("user.id", user_id)
+            span.set_attribute("request.type", request_type)
+            
+            # Track active requests
+            active_requests.add(1, {"request.type": request_type})
+            
+            logger.info(f"Processing {request_type} request for user {user_id}")
+            
+            # Child operations
+            cache_hit = simulate_cache_operation()
+            
+            if not cache_hit:
+                simulate_database_query(request_type)
+            
+            if random.random() > 0.5:
+                api_success = simulate_external_api_call("user-service")
+                if not api_success:
+                    logger.warning(f"Request partially failed for user {user_id}")
+                    span.set_attribute("request.status", "partial_failure")
+                    active_requests.add(-1, {"request.type": request_type})
+                    return
+            
+            span.set_attribute("request.status", "success")
+            logger.info(f"Request completed successfully for user {user_id}")
+            
+            # Record metrics
+            duration = time.time() - start_time
+            request_counter.add(1, {
+                "request.type": request_type,
+                "status": "success"
+            })
+            request_duration.record(duration, {"request.type": request_type})
+            active_requests.add(-1, {"request.type": request_type})
+
+    def simulate_background_job():
+        """Simulate a background processing job"""
+        start_time = time.time()
+        
+        with tracer.start_as_current_span("background.job") as span:
+            job_type = random.choice(["data_sync", "report_generation", "cleanup", "aggregation"])
+            span.set_attribute("job.type", job_type)
+            
+            logger.info(f"Starting background job: {job_type}")
+            
+            for i in range(random.randint(2, 5)):
+                simulate_database_query(f"{job_type}_step_{i}")
+                time.sleep(0.1)
+            
+            span.set_attribute("job.status", "completed")
+            logger.info(f"Background job completed: {job_type}")
+            
+            # Record metrics
+            duration = time.time() - start_time
+            request_counter.add(1, {
+                "request.type": "background_job",
+                "job.type": job_type,
+                "status": "success"
+            })
+            request_duration.record(duration, {"request.type": "background_job"})
+
+    # Main execution loop
+    counter = 0
+    print("\nStarting full observability demo (Logs + Traces + Metrics)...\n")
+
+    scenarios = [
+        ("user_request", process_user_request),
+        ("user_request", process_user_request),
+        ("user_request", process_user_request),
+        ("background_job", simulate_background_job),
+    ]
+
+    while True:
+        try:
+            scenario_name, scenario_func = random.choice(scenarios)
+            
+            print(f"Scenario {counter}: {scenario_name}")
+            scenario_func()
+            
+            counter += 1
+            
+            if counter % 5 == 0:
+                print(f"\n📊 Generated {counter} telemetry events (logs + traces + metrics)\n")
+            
+            time.sleep(random.uniform(3, 7))
+            
+        except KeyboardInterrupt:
+            print("\n\nStopping telemetry generation...")
+            break
+        except Exception as e:
+            logger.exception(f"Error in main loop: {e}")
+            error_counter.add(1, {"error.type": "main_loop_error"})
+            time.sleep(5)
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: logs-traces-metrics-otel-requirements
+  namespace: logging
+data:
+  requirements.txt: |
+    opentelemetry-sdk==1.18.0
+    opentelemetry-exporter-otlp==1.18.0
+    opentelemetry-api==1.18.0

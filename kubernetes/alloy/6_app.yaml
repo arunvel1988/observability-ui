@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logs-file
+  namespace: logging
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: logs-file
+  template:
+    metadata:
+      labels:
+        app: logs-file
+    spec:
+      containers:
+        - name: logs-file
+          image: python:3.11-slim
+          command:
+            - "sh"
+            - "-c"
+            - |
+              mkdir -p /logs
+              while true; do
+                echo "$(date) INFO Simulated log: $RANDOM" >> /logs/app.log
+                sleep 2
+              done
+          volumeMounts:
+            - name: shared-logs
+              mountPath: /logs
+      volumes:
+        - name: shared-logs
+          hostPath:
+            path: /tmp/logs-demo
+            type: DirectoryOrCreate

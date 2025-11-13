@@ -1,0 +1,495 @@
+# =========================================
+# Distributor - Receives incoming metrics
+# =========================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mimir-distributor
+  namespace: logging
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: mimir
+      component: distributor
+  template:
+    metadata:
+      labels:
+        app: mimir
+        component: distributor
+    spec:
+      containers:
+        - name: distributor
+          image: grafana/mimir:2.15.0
+          args:
+            - "-config.file=/etc/mimir/config.yaml"
+            - "-target=distributor"
+          ports:
+            - containerPort: 9009
+              name: http
+            - containerPort: 9095
+              name: grpc
+          volumeMounts:
+            - name: mimir-config
+              mountPath: /etc/mimir
+      volumes:
+        - name: mimir-config
+          configMap:
+            name: mimir-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mimir-distributor
+  namespace: logging
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 9009
+      targetPort: 9009
+      protocol: TCP
+    - name: grpc
+      port: 9095
+      targetPort: 9095
+      protocol: TCP
+  selector:
+    app: mimir
+    component: distributor
+---
+# =========================================
+# Ingester - Stores incoming metrics in memory
+# =========================================
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mimir-ingester
+  namespace: logging
+spec:
+  serviceName: mimir-ingester
+  replicas: 3
+  selector:
+    matchLabels:
+      app: mimir
+      component: ingester
+  template:
+    metadata:
+      labels:
+        app: mimir
+        component: ingester
+    spec:
+      containers:
+        - name: ingester
+          image: grafana/mimir:2.15.0
+          args:
+            - "-config.file=/etc/mimir/config.yaml"
+            - "-target=ingester"
+          ports:
+            - containerPort: 9009
+              name: http
+            - containerPort: 9095
+              name: grpc
+          volumeMounts:
+            - name: mimir-config
+              mountPath: /etc/mimir
+            - name: ingester-data
+              mountPath: /tmp/mimir
+      volumes:
+        - name: mimir-config
+          configMap:
+            name: mimir-config
+  volumeClaimTemplates:
+    - metadata:
+        name: ingester-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 10Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mimir-ingester
+  namespace: logging
+spec:
+  clusterIP: None
+  ports:
+    - name: http
+      port: 9009
+      targetPort: 9009
+      protocol: TCP
+    - name: grpc
+      port: 9095
+      targetPort: 9095
+      protocol: TCP
+  selector:
+    app: mimir
+    component: ingester
+---
+# =========================================
+# Querier - Queries data from ingesters and store-gateways
+# =========================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mimir-querier
+  namespace: logging
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: mimir
+      component: querier
+  template:
+    metadata:
+      labels:
+        app: mimir
+        component: querier
+    spec:
+      containers:
+        - name: querier
+          image: grafana/mimir:2.15.0
+          args:
+            - "-config.file=/etc/mimir/config.yaml"
+            - "-target=querier"
+          ports:
+            - containerPort: 9009
+              name: http
+            - containerPort: 9095
+              name: grpc
+          volumeMounts:
+            - name: mimir-config
+              mountPath: /etc/mimir
+      volumes:
+        - name: mimir-config
+          configMap:
+            name: mimir-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mimir-querier
+  namespace: logging
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 9009
+      targetPort: 9009
+      protocol: TCP
+    - name: grpc
+      port: 9095
+      targetPort: 9095
+      protocol: TCP
+  selector:
+    app: mimir
+    component: querier
+---
+# =========================================
+# Query Frontend - Load balances queries
+# =========================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mimir-query-frontend
+  namespace: logging
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: mimir
+      component: query-frontend
+  template:
+    metadata:
+      labels:
+        app: mimir
+        component: query-frontend
+    spec:
+      containers:
+        - name: query-frontend
+          image: grafana/mimir:2.15.0
+          args:
+            - "-config.file=/etc/mimir/config.yaml"
+            - "-target=query-frontend"
+          ports:
+            - containerPort: 9009
+              name: http
+            - containerPort: 9095
+              name: grpc
+          volumeMounts:
+            - name: mimir-config
+              mountPath: /etc/mimir
+      volumes:
+        - name: mimir-config
+          configMap:
+            name: mimir-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mimir-query-frontend
+  namespace: logging
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 9009
+      targetPort: 9009
+      protocol: TCP
+    - name: grpc
+      port: 9095
+      targetPort: 9095
+      protocol: TCP
+  selector:
+    app: mimir
+    component: query-frontend
+---
+# =========================================
+# Store Gateway - Queries long-term storage
+# =========================================
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mimir-store-gateway
+  namespace: logging
+spec:
+  serviceName: mimir-store-gateway
+  replicas: 2
+  selector:
+    matchLabels:
+      app: mimir
+      component: store-gateway
+  template:
+    metadata:
+      labels:
+        app: mimir
+        component: store-gateway
+    spec:
+      containers:
+        - name: store-gateway
+          image: grafana/mimir:2.15.0
+          args:
+            - "-config.file=/etc/mimir/config.yaml"
+            - "-target=store-gateway"
+          ports:
+            - containerPort: 9009
+              name: http
+            - containerPort: 9095
+              name: grpc
+          volumeMounts:
+            - name: mimir-config
+              mountPath: /etc/mimir
+            - name: store-gateway-data
+              mountPath: /tmp/mimir
+      volumes:
+        - name: mimir-config
+          configMap:
+            name: mimir-config
+  volumeClaimTemplates:
+    - metadata:
+        name: store-gateway-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 10Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mimir-store-gateway
+  namespace: logging
+spec:
+  clusterIP: None
+  ports:
+    - name: http
+      port: 9009
+      targetPort: 9009
+      protocol: TCP
+    - name: grpc
+      port: 9095
+      targetPort: 9095
+      protocol: TCP
+  selector:
+    app: mimir
+    component: store-gateway
+---
+# =========================================
+# Compactor - Compacts blocks in storage
+# =========================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mimir-compactor
+  namespace: logging
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mimir
+      component: compactor
+  template:
+    metadata:
+      labels:
+        app: mimir
+        component: compactor
+    spec:
+      containers:
+        - name: compactor
+          image: grafana/mimir:2.15.0
+          args:
+            - "-config.file=/etc/mimir/config.yaml"
+            - "-target=compactor"
+          ports:
+            - containerPort: 9009
+              name: http
+            - containerPort: 9095
+              name: grpc
+          volumeMounts:
+            - name: mimir-config
+              mountPath: /etc/mimir
+            - name: compactor-data
+              mountPath: /tmp/mimir
+      volumes:
+        - name: mimir-config
+          configMap:
+            name: mimir-config
+        - name: compactor-data
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mimir-compactor
+  namespace: logging
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 9009
+      targetPort: 9009
+      protocol: TCP
+    - name: grpc
+      port: 9095
+      targetPort: 9095
+      protocol: TCP
+  selector:
+    app: mimir
+    component: compactor
+---
+# =========================================
+# Main Service - Points to Query Frontend (for Grafana)
+# =========================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: mimir
+  namespace: logging
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 9009
+      targetPort: 9009
+      protocol: TCP
+    - name: grpc
+      port: 9095
+      targetPort: 9095
+      protocol: TCP
+  selector:
+    app: mimir
+    component: query-frontend
+---
+# =========================================
+# ConfigMap - Shared config for all components
+# =========================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mimir-config
+  namespace: logging
+data:
+  config.yaml: |
+    multitenancy_enabled: false
+    
+    server:
+      http_listen_port: 9009
+      grpc_listen_port: 9095
+      log_level: info
+    
+    common:
+      storage:
+        backend: filesystem
+        filesystem:
+          dir: /tmp/mimir/data
+    
+    blocks_storage:
+      backend: filesystem
+      filesystem:
+        dir: /tmp/mimir/blocks
+      tsdb:
+        dir: /tmp/mimir/tsdb
+      bucket_store:
+        sync_dir: /tmp/mimir/tsdb-sync
+    
+    compactor:
+      data_dir: /tmp/mimir/compactor
+      compaction_interval: 30m
+      deletion_delay: 2h
+      symbols_flushers_concurrency: 4
+      first_level_compaction_wait_period: 25m
+    
+    distributor:
+      ring:
+        kvstore:
+          store: memberlist
+    
+    ingester:
+      ring:
+        kvstore:
+          store: memberlist
+        replication_factor: 3
+    
+    memberlist:
+      join_members:
+        - mimir-distributor:7946
+        - mimir-ingester:7946
+        - mimir-querier:7946
+        - mimir-query-frontend:7946
+        - mimir-store-gateway:7946
+        - mimir-compactor:7946
+    
+    querier:
+      max_concurrent: 8
+    
+    query_frontend:
+      results_cache:
+        backend: inmemory
+    
+    ruler_storage:
+      backend: filesystem
+      filesystem:
+        dir: /tmp/mimir/rules
+    
+    ruler:
+      rule_path: /tmp/mimir/rules-temp
+      ring:
+        kvstore:
+          store: memberlist
+    
+    store_gateway:
+      sharding_ring:
+        replication_factor: 2
+        kvstore:
+          store: memberlist
+    
+    limits:
+      ingestion_rate: 50000
+      ingestion_burst_size: 100000
+      max_global_series_per_user: 1000000
+      max_global_exemplars_per_user: 100000
+      native_histograms_ingestion_enabled: true
+    
+    usage_stats:
+      enabled: false
