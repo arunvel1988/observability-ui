@@ -475,10 +475,35 @@ def list_yaml_files():
 # ------------------------------------------------------------
 # View & Apply/Delete Individual Files
 # ------------------------------------------------------------
-@app.route("/k8s/files")
-def view_k8s_files():
-    files = list_yaml_files()
-    return render_template("view_files.html", files=files)
+##@app.route("/k8s/files")
+#def view_k8s_files():
+##    files = list_yaml_files()
+##    return render_template("view_files.html", files=files)
+
+
+@app.route("/k8s/view", methods=["GET"])
+def view_single_file():
+    filename = request.args.get("filename")
+    if not filename:
+        return "No file specified"
+    file_path = os.path.join(REPO_DIR_UI, filename)
+
+    if not os.path.exists(file_path):
+        return f"<h3>❌ File not found: {filename}</h3><a href='/k8s/files'>⬅️ Back</a>"
+
+    with open(file_path, "r") as f:
+        content = f.read()
+
+    return f"""
+    <h2>📄 Viewing File: {filename}</h2>
+    <pre style='background:#f0f0f0; padding:15px; border-radius:8px; width:90%; margin:auto; overflow:auto;'>
+{content}
+    </pre>
+    <div style='text-align:center; margin-top:20px;'>
+        <a href='/k8s/files'>⬅️ Back to File List</a>
+    </div>
+    """
+
 
 @app.route("/k8s/apply", methods=["POST"])
 def apply_single_file():
