@@ -416,57 +416,90 @@ def traces_status():
 ##########################################logs ####################################################################################
 ##################### k8s lgtm ####################################################
 
-@app.route("/k8s")
-def k8s_landing():
-    return render_template("k8s.html")
-
 
 REPO_DIR_UI = "kubernetes/alloy"
 
-# Utility functions
-
+# ------------------------------------------------------------
+# Utility Functions
+# ------------------------------------------------------------
 
 def apply_k8s_files(file_range):
-    """Apply YAMLs from given numeric range."""
+    """Apply YAMLs from a numeric range (e.g., 1–6)."""
     os.chdir(REPO_DIR_UI)
     subprocess.run(["kubectl", "apply", "-f", "1_namespace.yaml"], check=False)
-
     for i in file_range:
         yaml_pattern = f"{i}_*.yaml"
         subprocess.run(["bash", "-c", f"kubectl apply -f {yaml_pattern}"], check=False)
-    
     os.chdir("../../..")
 
+
 def delete_k8s_files(file_range):
-    """Delete YAMLs from given numeric range."""
+    """Delete YAMLs from a numeric range."""
     os.chdir(REPO_DIR_UI)
     for i in file_range:
         yaml_pattern = f"{i}_*.yaml"
         subprocess.run(["bash", "-c", f"kubectl delete -f {yaml_pattern} --ignore-not-found"], check=False)
     os.chdir("../../..")
 
+
 def get_k8s_status(namespace="logging"):
-    """Return pod and service status in given namespace."""
+    """Return pod and service status."""
     try:
         pods = subprocess.check_output(
             ["kubectl", "get", "pods", "-n", namespace, "-o", "wide"]
         ).decode("utf-8")
-
         svcs = subprocess.check_output(
             ["kubectl", "get", "svc", "-n", namespace]
         ).decode("utf-8")
-
     except subprocess.CalledProcessError:
         pods = "Error retrieving pods."
         svcs = "Error retrieving services."
-
     return pods, svcs
 
+
+def list_yaml_files():
+    """List all YAML files inside kubernetes/alloy."""
+    files = sorted(glob.glob(os.path.join(REPO_DIR_UI, "*.yaml")))
+    return [os.path.basename(f) for f in files]
+
+
+# ------------------------------------------------------------
+# View & Apply/Delete Individual Files
+# ------------------------------------------------------------
+
+@app.route("/k8s/files")
+def view_k8s_files():
+    files = list_yaml_files()
+    return render_template("view_files.html", files=files)
+
+
+@app.route("/k8s/apply", methods=["POST"])
+def apply_single_file():
+    filename = request.form.get("filename")
+    if not filename:
+        return "No file specified"
+    file_path = os.path.join(REPO_DIR_UI, filename)
+    output = subprocess.getoutput(f"kubectl apply -f {file_path}")
+    return f"<h3>Applied: {filename}</h3><pre>{output}</pre><a href='/k8s/files'>⬅️ Back</a>"
+
+
+@app.route("/k8s/delete", methods=["POST"])
+def delete_single_file():
+    filename = request.form.get("filename")
+    if not filename:
+        return "No file specified"
+    file_path = os.path.join(REPO_DIR_UI, filename)
+    output = subprocess.getoutput(f"kubectl delete -f {file_path} --ignore-not-found")
+    return f"<h3>Deleted: {filename}</h3><pre>{output}</pre><a href='/k8s/files'>⬅️ Back</a>"
+
+
+# ------------------------------------------------------------
+# Stack Management Endpoints
+# ------------------------------------------------------------
 
 # --------------- NORMAL LOGS ------------------
 @app.route("/k8s/logs/install")
 def install_normal_logs():
-    ensure_repo()
     apply_k8s_files(range(1, 7))
     return render_template("install_logs.html")
 
@@ -486,7 +519,6 @@ def status_normal_logs():
 # --------------- OTEL LOGS ------------------
 @app.route("/k8s/otel/logs/install")
 def install_otel_logs():
-    ensure_repo()
     apply_k8s_files(range(7, 11))
     return render_template("install_otel_logs.html")
 
@@ -506,7 +538,6 @@ def status_otel_logs():
 # --------------- OTEL TRACES ------------------
 @app.route("/k8s/otel/traces/install")
 def install_otel_traces():
-    ensure_repo()
     apply_k8s_files(range(11, 16))
     return render_template("install_otel_traces.html")
 
@@ -526,7 +557,6 @@ def status_otel_traces():
 # --------------- OTEL LGTM ------------------
 @app.route("/k8s/otel/lgtm/install")
 def install_otel_lgtm():
-    ensure_repo()
     apply_k8s_files(range(16, 21))
     return render_template("install_otel_lgtm.html")
 
@@ -543,16 +573,9 @@ def status_otel_lgtm():
     return render_template("status_otel_lgtm.html", pods=pods, svcs=svcs)
 
 
-# --------------- GENERIC STATUS (optional JSON) ------------------
-@app.route("/k8s/status/json")
-def json_status():
-    pods, svcs = get_k8s_status()
-    return jsonify({"pods": pods, "services": svcs})
 
 
-# Main entry
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080, debug=True)
+
 
     ##################################### k8s lgtm - end #######################################
 
