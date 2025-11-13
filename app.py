@@ -487,7 +487,7 @@ def apply_single_file():
         return "No file specified"
     file_path = os.path.join(REPO_DIR_UI, filename)
     output = subprocess.getoutput(f"kubectl apply -f {file_path}")
-    return f"<h3>✅ Applied: {filename}</h3><pre>{output}</pre><a href='/k8s/files'>⬅️ Back</a>"
+    return f"<h3>Applied: {filename}</h3><pre>{output}</pre><a href='/k8s/files'>⬅️ Back</a>"
 
 @app.route("/k8s/delete", methods=["POST"])
 def delete_single_file():
@@ -496,7 +496,7 @@ def delete_single_file():
         return "No file specified"
     file_path = os.path.join(REPO_DIR_UI, filename)
     output = subprocess.getoutput(f"kubectl delete -f {file_path} --ignore-not-found")
-    return f"<h3>🗑️ Deleted: {filename}</h3><pre>{output}</pre><a href='/k8s/files'>⬅️ Back</a>"
+    return f"<h3>Deleted: {filename}</h3><pre>{output}</pre><a href='/k8s/files'>⬅️ Back</a>"
 
 # ------------------------------------------------------------
 # Stack Management Endpoints
