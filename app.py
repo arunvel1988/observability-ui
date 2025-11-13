@@ -505,17 +505,17 @@ def delete_single_file():
 @app.route("/k8s/logs/install")
 def install_normal_logs():
     apply_k8s_files(range(1, 7))
-    return render_template("install_logs.html")
+    return render_template("install_logs_k8s.html")
 
 @app.route("/k8s/logs/delete")
 def delete_normal_logs():
     delete_k8s_files(range(1, 7))
-    return render_template("delete_logs.html")
+    return render_template("delete_logs_k8s.html")
 
 @app.route("/k8s/logs/status")
 def status_normal_logs():
     pods, svcs = get_k8s_status()
-    return render_template("status_logs.html", pods=pods, svcs=svcs)
+    return render_template("status_logs_k8s.html", pods=pods, svcs=svcs)
 
 # --------------- OTEL LOGS ------------------
 @app.route("/k8s/otel/logs/install")
