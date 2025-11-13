@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Kubernetes YAML Files</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 30px; background-color: #f8f9fa; }
+        table { width: 80%; margin: 20px auto; border-collapse: collapse; }
+        th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
+        th { background-color: #e3f2fd; }
+        form { display: inline; }
+        .btn {
+            padding: 6px 10px;
+            border: none;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .apply { background-color: #4caf50; }
+        .delete { background-color: #f44336; }
+        .nav { text-align: center; margin-top: 20px; }
+        .nav a { margin: 0 15px; color: #007bff; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <h2 style="text-align:center;">📄 Kubernetes YAML Files (kubernetes/alloy)</h2>
+
+    <table>
+        <tr>
+            <th>Filename</th>
+            <th>Actions</th>
+        </tr>
+        {% for file in files %}
+        <tr>
+            <td>{{ file }}</td>
+            <td>
+                <form method="post" action="/k8s/apply">
+                    <input type="hidden" name="filename" value="{{ file }}">
+                    <button type="submit" class="btn apply">Apply</button>
+                </form>
+                <form method="post" action="/k8s/delete">
+                    <input type="hidden" name="filename" value="{{ file }}">
+                    <button type="submit" class="btn delete">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <div class="nav">
+        <a href="/k8s/otel/lgtm/status">LGTM Status</a> |
+        <a href="/">🏠 Home</a>
+    </div>
+</body>
+</html>
