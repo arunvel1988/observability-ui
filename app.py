@@ -421,13 +421,10 @@ def k8s_landing():
     return render_template("k8s.html")
 
 
-REPO_URL_UI = "https://github.com/arunvel1988/observability-ui"
-REPO_DIR_UI = "observability-ui/kubernetes/alloy"
+REPO_DIR_UI = "kubernetes/alloy"
 
 # Utility functions
-def ensure_repo():
-    if not os.path.exists("observability-ui"):
-        subprocess.run(["git", "clone", REPO_URL_UI], check=True)
+
 
 def apply_k8s_files(file_range):
     """Apply YAMLs from given numeric range."""
@@ -448,7 +445,7 @@ def delete_k8s_files(file_range):
         subprocess.run(["bash", "-c", f"kubectl delete -f {yaml_pattern} --ignore-not-found"], check=False)
     os.chdir("../../..")
 
-def get_k8s_status(namespace="observability"):
+def get_k8s_status(namespace="logging"):
     """Return pod and service status in given namespace."""
     try:
         pods = subprocess.check_output(
