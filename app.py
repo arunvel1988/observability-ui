@@ -423,6 +423,29 @@ def k8s_landing():
     return render_template("k8s.html")
 
 
+port_forward_process = None
+
+def start_port_forward():
+    global port_forward_process
+
+    # If already running, do nothing
+    if port_forward_process and port_forward_process.poll() is None:
+        return
+
+    cmd = [
+        "kubectl",
+        "port-forward",
+        "service/grafana",
+        "-n", "logging",
+        "3000:3000",
+        "--address", "0.0.0.0"
+    ]
+
+    port_forward_process = subprocess.Popen(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE
+    )
 
 
 # ------------------------------------------------------------
@@ -530,7 +553,7 @@ def delete_single_file():
 @app.route("/k8s/logs/install")
 def install_normal_logs():
     apply_k8s_files(range(1, 7))
-    
+    start_port_forward()
     return render_template("install_logs_k8s.html")
 
 @app.route("/k8s/logs/delete")
@@ -547,6 +570,7 @@ def status_normal_logs():
 @app.route("/k8s/otel/logs/install")
 def install_otel_logs():
     apply_k8s_files(range(7, 11))
+    start_port_forward()
     return render_template("install_otel_logs.html")
 
 @app.route("/k8s/otel/logs/delete")
@@ -563,6 +587,7 @@ def status_otel_logs():
 @app.route("/k8s/otel/traces/install")
 def install_otel_traces():
     apply_k8s_files(range(11, 16))
+    start_port_forward()
     return render_template("install_otel_traces.html")
 
 @app.route("/k8s/otel/traces/delete")
@@ -579,6 +604,7 @@ def status_otel_traces():
 @app.route("/k8s/otel/lgtm/install")
 def install_otel_lgtm():
     apply_k8s_files(range(16, 21))
+    start_port_forward()
     return render_template("install_otel_lgtm.html")
 
 @app.route("/k8s/otel/lgtm/delete")
