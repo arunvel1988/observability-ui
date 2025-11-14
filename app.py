@@ -530,6 +530,7 @@ def delete_single_file():
 @app.route("/k8s/logs/install")
 def install_normal_logs():
     apply_k8s_files(range(1, 7))
+    
     return render_template("install_logs_k8s.html")
 
 @app.route("/k8s/logs/delete")
