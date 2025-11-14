@@ -428,7 +428,7 @@ port_forward_process = None
 def start_port_forward():
     global port_forward_process
 
-    # If already running, do nothing
+    # Already running
     if port_forward_process and port_forward_process.poll() is None:
         return
 
@@ -446,6 +446,20 @@ def start_port_forward():
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE
     )
+
+def stop_port_forward():
+    global port_forward_process
+
+    if port_forward_process and port_forward_process.poll() is None:
+        port_forward_process.terminate()   # send SIGTERM
+
+        try:
+            port_forward_process.wait(timeout=3)
+        except subprocess.TimeoutExpired:
+            port_forward_process.kill()    # force kill
+
+    port_forward_process = None
+
 
 
 # ------------------------------------------------------------
@@ -559,6 +573,7 @@ def install_normal_logs():
 @app.route("/k8s/logs/delete")
 def delete_normal_logs():
     delete_k8s_files(range(1, 7))
+    stop_port_forward()
     return render_template("delete_logs_k8s.html")
 
 @app.route("/k8s/logs/status")
@@ -576,6 +591,7 @@ def install_otel_logs():
 @app.route("/k8s/otel/logs/delete")
 def delete_otel_logs():
     delete_k8s_files(range(7, 11))
+    stop_port_forward()
     return render_template("delete_otel_logs.html")
 
 @app.route("/k8s/otel/logs/status")
@@ -593,6 +609,7 @@ def install_otel_traces():
 @app.route("/k8s/otel/traces/delete")
 def delete_otel_traces():
     delete_k8s_files(range(11, 16))
+    stop_port_forward()
     return render_template("delete_otel_traces.html")
 
 @app.route("/k8s/otel/traces/status")
@@ -610,6 +627,7 @@ def install_otel_lgtm():
 @app.route("/k8s/otel/lgtm/delete")
 def delete_otel_lgtm():
     delete_k8s_files(range(16, 21))
+    stop_port_forward()
     return render_template("delete_otel_lgtm.html")
 
 @app.route("/k8s/otel/lgtm/status")
