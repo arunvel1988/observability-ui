@@ -632,13 +632,13 @@ def status_otel_traces():
 # --------------- OTEL LGTM ------------------
 @app.route("/k8s/otel/lgtm/install")
 def install_otel_lgtm():
-    apply_k8s_files(range(16, 21))
+    apply_k8s_files(range(16, 22))
     start_port_forward()
     return render_template("install_otel_lgtm.html")
 
 @app.route("/k8s/otel/lgtm/delete")
 def delete_otel_lgtm():
-    delete_k8s_files(range(16, 21))
+    delete_k8s_files(range(16, 22))
     stop_port_forward()
     return render_template("delete_otel_lgtm.html")
 
