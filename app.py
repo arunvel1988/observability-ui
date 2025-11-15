@@ -423,12 +423,14 @@ def k8s_landing():
     return render_template("k8s.html")
 
 
+import time
+import subprocess
+
 port_forward_process = None
 
 def start_port_forward():
     global port_forward_process
 
-    # Already running
     if port_forward_process and port_forward_process.poll() is None:
         return
 
@@ -444,19 +446,29 @@ def start_port_forward():
     port_forward_process = subprocess.Popen(
         cmd,
         stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE
+        stderr=subprocess.PIPE,
+        text=True
     )
+
+    time.sleep(1)
+
+    # Check if process already died
+    if port_forward_process.poll() is not None:
+        error_msg = port_forward_process.stderr.read()
+        print("Port-forward failed:", error_msg)
+        return
+
 
 def stop_port_forward():
     global port_forward_process
 
     if port_forward_process and port_forward_process.poll() is None:
-        port_forward_process.terminate()   # send SIGTERM
+        port_forward_process.terminate()
 
         try:
             port_forward_process.wait(timeout=3)
         except subprocess.TimeoutExpired:
-            port_forward_process.kill()    # force kill
+            port_forward_process.kill()
 
     port_forward_process = None
 
