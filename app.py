@@ -636,7 +636,7 @@ def status_otel_traces():
 @app.route("/k8s/otel/lgtm/install")
 def install_otel_lgtm():
     apply_k8s_files(range(16, 22))
-     time.sleep(10)
+    time.sleep(10)
     start_port_forward()
     return render_template("install_otel_lgtm.html")
 
