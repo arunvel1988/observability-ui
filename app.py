@@ -579,6 +579,7 @@ def delete_single_file():
 @app.route("/k8s/logs/install")
 def install_normal_logs():
     apply_k8s_files(range(1, 7))
+    time.sleep(10)
     start_port_forward()
     return render_template("install_logs_k8s.html")
 
@@ -597,6 +598,7 @@ def status_normal_logs():
 @app.route("/k8s/otel/logs/install")
 def install_otel_logs():
     apply_k8s_files(range(7, 11))
+    time.sleep(10)
     start_port_forward()
     return render_template("install_otel_logs.html")
 
@@ -615,6 +617,7 @@ def status_otel_logs():
 @app.route("/k8s/otel/traces/install")
 def install_otel_traces():
     apply_k8s_files(range(11, 16))
+    time.sleep(10)
     start_port_forward()
     return render_template("install_otel_traces.html")
 
@@ -633,12 +636,14 @@ def status_otel_traces():
 @app.route("/k8s/otel/lgtm/install")
 def install_otel_lgtm():
     apply_k8s_files(range(16, 22))
+     time.sleep(10)
     start_port_forward()
     return render_template("install_otel_lgtm.html")
 
 @app.route("/k8s/otel/lgtm/delete")
 def delete_otel_lgtm():
     delete_k8s_files(range(16, 22))
+   
     stop_port_forward()
     return render_template("delete_otel_lgtm.html")
 
