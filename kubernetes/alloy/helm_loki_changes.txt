@@ -6,8 +6,11 @@ loki.write "default" {
     url = "http://loki-gateway.default.svc.cluster.local:80/loki/api/v1/push"
   }
 
-  tenant_id = "default"
+  headers = {
+    "X-Scope-OrgID" = "default"
+  }
 }
+
 ######################
 
 
