@@ -1,0 +1,16 @@
+###
+#alloy config
+# add default tenant 
+loki.write "default" {
+  endpoint {
+    url = "http://loki-gateway.default.svc.cluster.local:80/loki/api/v1/push"
+  }
+
+  tenant_id = "default"
+}
+######################
+
+
+# on grafana add 
+url: http://loki-query-frontend.default.svc.cluster.local:3100
+###############################################
