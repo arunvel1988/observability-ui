@@ -83,3 +83,6 @@ data:
               matcherRegex: "trace_id=(\\w+)"
               name: TraceID
               url: "$${__value.raw}"
+
+#### THIS IS FOR HELM MICRO-SERVICE DEPLOYMENT ######################
+# http://loki-gateway.default.svc.cluster.local:80
