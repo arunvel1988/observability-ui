@@ -105,6 +105,6 @@ data:
     // -------------------------
     loki.write "default" {
       endpoint {
-        url = "http://loki-gateway:80/loki/api/v1/push"
+        url = "http://loki-gateway.default.svc.cluster.local:80/loki/api/v1/push"
       }
     }
