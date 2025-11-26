@@ -153,10 +153,12 @@ kubectl get pods -n loki
 
 deploymentMode: Distributed
 
+
 #############################################
 # LOKI CONFIGURATION (Required Section)
 #############################################
 loki:
+
   auth_enabled: false
   commonConfig:
     replication_factor: 1
@@ -172,12 +174,15 @@ loki:
 
   ingester:
     chunk_encoding: snappy
+    chunk_idle_period: 1m       # default is 5m or higher
+    max_chunk_age: 2m
+      # flush small chunks quickly (for testing)
 
   querier:
     max_concurrent: 4
 
   pattern_ingester:
-    enabled: true
+    enabled: false
 
   limits_config:
     allow_structured_metadata: true
@@ -276,8 +281,6 @@ minio:
     requests:
       memory: 512Mi
       cpu: 200m
-
-
 
 
 ####################################################
