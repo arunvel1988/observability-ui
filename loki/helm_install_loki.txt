@@ -287,3 +287,11 @@ helm install loki grafana/loki -f values.yaml
 helm uninstall loki 
 
 #########################################
+
+
+ingester:
+    chunk_idle_period: 1m       # flush after 1 minute idle
+    max_chunk_age: 5m 
+
+
+###################################################################
