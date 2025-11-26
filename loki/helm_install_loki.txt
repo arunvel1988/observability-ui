@@ -1,0 +1,289 @@
+#######################################################################################################
+
+
+helm repo add grafana https://grafana.github.io/helm-charts
+
+helm repo update
+
+
+
+##### values.yaml ######################################
+############################## BEGIN ################################################
+
+deploymentMode: Distributed
+
+#############################################
+# LOKI CONFIGURATION (Required Section)
+#############################################
+loki:
+  schemaConfig:
+    configs:
+      - from: "2024-04-01"
+        store: tsdb
+        object_store: s3
+        schema: v13
+        index:
+          prefix: loki_index_
+          period: 24h
+
+  ingester:
+    chunk_encoding: snappy
+
+  querier:
+    max_concurrent: 4
+
+  pattern_ingester:
+    enabled: true
+
+  limits_config:
+    allow_structured_metadata: true
+    volume_enabled: true
+
+  #############################################
+  # Storage backend required in Distributed mode
+  #############################################
+  storage:
+    type: s3
+    bucketNames:
+      chunks: loki-chunks
+      ruler: loki-ruler
+      admin: loki-admin
+
+  #############################################
+  # S3 connection details (MinIO will provide this)
+  #############################################
+  storage_config:
+    aws:
+      s3: http://minio:9000
+      bucketnames: loki-chunks
+      access_key_id: minio
+      secret_access_key: minio123
+      s3forcepathstyle: true
+
+#############################################
+# REPLICAS FOR EACH LOKI COMPONENT
+#############################################
+ingester:
+  replicas: 3
+  zoneAwareReplication:
+    enabled: false
+
+querier:
+  replicas: 3
+  maxUnavailable: 2
+
+queryFrontend:
+  replicas: 2
+  maxUnavailable: 1
+
+queryScheduler:
+  replicas: 2
+
+distributor:
+  replicas: 3
+  maxUnavailable: 2
+
+compactor:
+  replicas: 1
+
+indexGateway:
+  replicas: 2
+  maxUnavailable: 1
+
+bloomPlanner:
+  replicas: 0
+bloomBuilder:
+  replicas: 0
+bloomGateway:
+  replicas: 0
+
+backend:
+  replicas: 0
+read:
+  replicas: 0
+write:
+  replicas: 0
+singleBinary:
+  replicas: 0
+
+#############################################
+# GATEWAY EXTERNAL ACCESS (LoadBalancer)
+#############################################
+gateway:
+  service:
+    type: LoadBalancer
+
+#############################################
+# MINIO FOR BACKEND STORAGE
+#############################################
+minio:
+  enabled: true
+
+  rootUser: minio
+  rootPassword: minio123
+
+  buckets:
+    - name: loki-chunks
+    - name: loki-ruler
+    - name: loki-admin
+
+  resources:
+    requests:
+      memory: 512Mi
+      cpu: 200m
+############################## END ################################################
+
+
+
+####################################################################
+
+
+helm install --values values.yaml loki grafana/loki
+
+helm upgrade --values values.yaml loki grafana/loki
+
+kubectl get pods -n loki
+
+
+##################### values for kind cluster ##############################
+
+# values.yaml ##########
+
+
+
+deploymentMode: Distributed
+
+#############################################
+# LOKI CONFIGURATION (Required Section)
+#############################################
+loki:
+  auth_enabled: false
+  commonConfig:
+    replication_factor: 1
+  schemaConfig:
+    configs:
+      - from: "2024-04-01"
+        store: tsdb
+        object_store: s3
+        schema: v13
+        index:
+          prefix: loki_index_
+          period: 24h
+
+  ingester:
+    chunk_encoding: snappy
+
+  querier:
+    max_concurrent: 4
+
+  pattern_ingester:
+    enabled: true
+
+  limits_config:
+    allow_structured_metadata: true
+    volume_enabled: true
+
+  #############################################
+  # Storage backend required in Distributed mode
+  #############################################
+  storage:
+    type: s3
+    bucketNames:
+      chunks: loki-chunks
+      ruler: loki-ruler
+      admin: loki-admin
+
+  #############################################
+  # S3 connection details (MinIO will provide this)
+  #############################################
+  storage_config:
+    aws:
+      s3: http://minio:9000
+      bucketnames: loki-chunks
+      access_key_id: minio
+      secret_access_key: minio123
+      s3forcepathstyle: true
+
+#############################################
+# REPLICAS FOR EACH LOKI COMPONENT
+#############################################
+ingester:
+  replicas: 1
+  maxUnavailable: 0
+  zoneAwareReplication:
+    enabled: false
+
+querier:
+  replicas: 1
+  maxUnavailable: 0
+
+queryFrontend:
+  replicas: 1
+  maxUnavailable: 0
+
+queryScheduler:
+  replicas: 1
+
+distributor:
+  replicas: 1
+  maxUnavailable: 0
+
+compactor:
+  replicas: 1
+
+indexGateway:
+  replicas: 1
+  maxUnavailable: 0
+
+bloomPlanner:
+  replicas: 0
+bloomBuilder:
+  replicas: 0
+bloomGateway:
+  replicas: 0
+
+backend:
+  replicas: 0
+read:
+  replicas: 0
+write:
+  replicas: 0
+singleBinary:
+  replicas: 0
+
+#############################################
+# GATEWAY EXTERNAL ACCESS (LoadBalancer)
+#############################################
+gateway:
+  service:
+    type: ClusterIP
+
+#############################################
+# MINIO FOR BACKEND STORAGE
+#############################################
+minio:
+  enabled: true
+
+  rootUser: minio
+  rootPassword: minio123
+
+  buckets:
+    - name: loki-chunks
+    - name: loki-ruler
+    - name: loki-admin
+
+  resources:
+    requests:
+      memory: 512Mi
+      cpu: 200m
+
+
+
+
+####################################################
+
+helm install loki grafana/loki -f values.yaml
+
+helm uninstall loki 
+
+#########################################
