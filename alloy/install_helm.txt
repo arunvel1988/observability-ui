@@ -1,0 +1,102 @@
+helm repo add grafana https://grafana.github.io/helm-charts
+
+helm repo update
+
+kubectl create namespace alloy
+
+helm install --namespace alloy alloy grafana/alloy
+
+kubectl get pods --namespace alloy
+
+
+##########################################################################
+
+##### config.alloy
+// Write your Alloy config here:
+logging {
+  level = "info"
+  format = "logfmt"
+}
+
+###################################################################
+
+
+kubectl create configmap --namespace alloy alloy-config "--from-file=config.alloy=./config.alloy"
+
+kubectl delete cm alloy-config -n alloy
+
+#################################################################
+
+#values.yaml
+
+
+alloy:
+  configMap:
+    create: false
+    name: alloy-config
+    key: config.alloy
+
+
+###############################
+
+helm upgrade --namespace alloy alloy grafana/alloy -f ./values.yaml
+
+##########################################################
+
+
+############ALLOY CONFIG######################################################
+logging {
+  level  = "info"
+  format = "logfmt"
+}
+
+
+otelcol.receiver.otlp "flask_receiver" {
+  grpc {
+    endpoint = "0.0.0.0:4317"
+  }
+  http {
+    endpoint = "0.0.0.0:4318"
+  }
+  output {
+    metrics = [otelcol.processor.batch.main.input]
+    logs    = [otelcol.processor.batch.main.input]
+    traces  = [otelcol.processor.batch.main.input]
+  }
+}
+
+
+otelcol.processor.batch "main" {
+  output {
+    metrics = [otelcol.exporter.otlp.mimir.input]
+    logs    = [otelcol.exporter.otlp.loki.input]
+    traces  = [otelcol.exporter.otlp.tempo.input]
+  }
+}
+
+
+otelcol.exporter.otlp "mimir" {
+  client { endpoint = "http://mimir:4317" }
+}
+otelcol.exporter.otlp "loki" {
+  client { endpoint = "http://loki:4317" }
+}
+otelcol.exporter.otlp "tempo" {
+  client { endpoint = "http://tempo:4317" }
+}
+
+
+################################################## ALLOY CONFIG - END #####################################################
+### when installing loki via helm chart .. only change to bne made in alloy config #########
+
+
+########## HELM ENDPOINT ####################
+loki.write "default" {
+  endpoint {
+    url = "http://loki-gateway.default.svc.cluster.local/loki/api/v1/push"
+  }
+}
+
+
+########## HELM ENDPOINT -END ####################
+
