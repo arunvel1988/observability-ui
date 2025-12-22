@@ -117,12 +117,12 @@ data:
       encoding = "otlp_proto"
       tls {
         insecure = false
-        ca_file  = "/path/to/ca.pem"
+        ca_file   = "/etc/kafka/ca.pem"
+        cert_file = "/etc/kafka/service.cert"
+        key_file  = "/etc/kafka/service.key"
+       
       }
-      auth {
-        username = "<KAFKA_USERNAME>"
-        password = "<KAFKA_PASSWORD>"
-      }
+     
     }
 
     otelcol.exporter.kafka "traces" {
@@ -131,12 +131,11 @@ data:
       encoding = "otlp_proto"
       tls {
         insecure = false
-        ca_file  = "/path/to/ca.pem"
+        ca_file   = "/etc/kafka/ca.pem"
+        cert_file = "/etc/kafka/service.cert"
+        key_file  = "/etc/kafka/service.key"
       }
-      auth {
-        username = "<KAFKA_USERNAME>"
-        password = "<KAFKA_PASSWORD>"
-      }
+     
     }
 
     otelcol.exporter.kafka "metrics" {
@@ -145,12 +144,11 @@ data:
       encoding = "otlp_proto"
       tls {
         insecure = false
-        ca_file  = "/path/to/ca.pem"
+        ca_file   = "/etc/kafka/ca.pem"
+        cert_file = "/etc/kafka/service.cert"
+        key_file  = "/etc/kafka/service.key"
       }
-      auth {
-        username = "<KAFKA_USERNAME>"
-        password = "<KAFKA_PASSWORD>"
-      }
+    
     }
 
     // =========================================
@@ -162,12 +160,11 @@ data:
       encoding = "otlp_proto"
       tls {
         insecure = false
-        ca_file  = "/path/to/ca.pem"
+        ca_file   = "/etc/kafka/ca.pem"
+        cert_file = "/etc/kafka/service.cert"
+        key_file  = "/etc/kafka/service.key"
       }
-      auth {
-        username = "<KAFKA_USERNAME>"
-        password = "<KAFKA_PASSWORD>"
-      }
+    
       output {
         logs = [otelcol.processor.batch.logs.input.loki]
       }
@@ -179,12 +176,11 @@ data:
       encoding = "otlp_proto"
       tls {
         insecure = false
-        ca_file  = "/path/to/ca.pem"
+        ca_file   = "/etc/kafka/ca.pem"
+        cert_file = "/etc/kafka/service.cert"
+        key_file  = "/etc/kafka/service.key"
       }
-      auth {
-        username = "<KAFKA_USERNAME>"
-        password = "<KAFKA_PASSWORD>"
-      }
+     
       output {
         traces = [otelcol.processor.batch.traces.input.tempo]
       }
@@ -196,12 +192,11 @@ data:
       encoding = "otlp_proto"
       tls {
         insecure = false
-        ca_file  = "/path/to/ca.pem"
+        ca_file   = "/etc/kafka/ca.pem"
+        cert_file = "/etc/kafka/service.cert"
+        key_file  = "/etc/kafka/service.key"
       }
-      auth {
-        username = "<KAFKA_USERNAME>"
-        password = "<KAFKA_PASSWORD>"
-      }
+     
       output {
         metrics = [otelcol.processor.batch.metrics.input.mimir]
       }
