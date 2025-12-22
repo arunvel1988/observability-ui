@@ -76,6 +76,7 @@ spec:
       targetPort: 4318
       protocol: TCP
   type: ClusterIP
+##########################################################################################
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -84,105 +85,101 @@ metadata:
   namespace: logging
 data:
   config.alloy: |
-    // =========================================
-    // OTLP Receiver for Logs, Traces & Metrics
-    // =========================================
+  
     otelcol.receiver.otlp "default" {
       grpc {
         endpoint = "0.0.0.0:4317"
       }
-      
+
       http {
         endpoint = "0.0.0.0:4318"
       }
-      
+
       output {
-        logs    = [otelcol.processor.batch.logs.input]
-        traces  = [otelcol.processor.batch.traces.input]
-        metrics = [otelcol.processor.batch.metrics.input]
+        logs    = [otelcol.processor.batch.logs_ingest.input]
+        traces  = [otelcol.processor.batch.traces_ingest.input]
+        metrics = [otelcol.processor.batch.metrics_ingest.input]
       }
     }
 
-    // =========================================
-    // Batch Processors (separate for each signal)
-    // =========================================
-    otelcol.processor.batch "logs" {
+ 
+    otelcol.processor.batch "logs_ingest" {
       output {
         logs = [otelcol.exporter.kafka.logs.input]
       }
     }
 
-    otelcol.processor.batch "traces" {
+    otelcol.processor.batch "traces_ingest" {
       output {
         traces = [otelcol.exporter.kafka.traces.input]
       }
     }
 
-    otelcol.processor.batch "metrics" {
+    otelcol.processor.batch "metrics_ingest" {
       output {
         metrics = [otelcol.exporter.kafka.metrics.input]
       }
     }
 
-    // =========================================
-    // Kafka Exporters (main collector pushes here)
-    // =========================================
+    // =====================================================
+    // 3. KAFKA EXPORTERS (produce)
+    // =====================================================
     otelcol.exporter.kafka "logs" {
       brokers  = ["arunvel1988-kafka-arunvel1988.e.aivencloud.com:14253"]
       topic    = "otel-logs"
       encoding = "otlp_proto"
+
       tls {
-        insecure = false
+        insecure  = false
         ca_file   = "/etc/kafka/ca.pem"
         cert_file = "/etc/kafka/service.cert"
         key_file  = "/etc/kafka/service.key"
-       
       }
-     
     }
 
     otelcol.exporter.kafka "traces" {
       brokers  = ["arunvel1988-kafka-arunvel1988.e.aivencloud.com:14253"]
       topic    = "otel-traces"
       encoding = "otlp_proto"
+
       tls {
-        insecure = false
+        insecure  = false
         ca_file   = "/etc/kafka/ca.pem"
         cert_file = "/etc/kafka/service.cert"
         key_file  = "/etc/kafka/service.key"
       }
-     
     }
 
     otelcol.exporter.kafka "metrics" {
       brokers  = ["arunvel1988-kafka-arunvel1988.e.aivencloud.com:14253"]
       topic    = "otel-metrics"
       encoding = "otlp_proto"
+
       tls {
-        insecure = false
+        insecure  = false
         ca_file   = "/etc/kafka/ca.pem"
         cert_file = "/etc/kafka/service.cert"
         key_file  = "/etc/kafka/service.key"
       }
-    
     }
 
-    // =========================================
-    // Downstream Kafka Receiver (decoupled consumers)
-    // =========================================
+    // =====================================================
+    // 4. KAFKA RECEIVERS (consume)
+    // =====================================================
     otelcol.receiver.kafka "logs" {
       brokers  = ["arunvel1988-kafka-arunvel1988.e.aivencloud.com:14253"]
       topics   = ["otel-logs"]
       encoding = "otlp_proto"
+
       tls {
-        insecure = false
+        insecure  = false
         ca_file   = "/etc/kafka/ca.pem"
         cert_file = "/etc/kafka/service.cert"
         key_file  = "/etc/kafka/service.key"
       }
-    
+
       output {
-        logs = [otelcol.processor.batch.logs.input.loki]
+        logs = [otelcol.processor.batch.logs_export.input]
       }
     }
 
@@ -190,15 +187,16 @@ data:
       brokers  = ["arunvel1988-kafka-arunvel1988.e.aivencloud.com:14253"]
       topics   = ["otel-traces"]
       encoding = "otlp_proto"
+
       tls {
-        insecure = false
+        insecure  = false
         ca_file   = "/etc/kafka/ca.pem"
         cert_file = "/etc/kafka/service.cert"
         key_file  = "/etc/kafka/service.key"
       }
-     
+
       output {
-        traces = [otelcol.processor.batch.traces.input.tempo]
+        traces = [otelcol.processor.batch.traces_export.input]
       }
     }
 
@@ -206,42 +204,43 @@ data:
       brokers  = ["arunvel1988-kafka-arunvel1988.e.aivencloud.com:14253"]
       topics   = ["otel-metrics"]
       encoding = "otlp_proto"
+
       tls {
-        insecure = false
+        insecure  = false
         ca_file   = "/etc/kafka/ca.pem"
         cert_file = "/etc/kafka/service.cert"
         key_file  = "/etc/kafka/service.key"
       }
-     
+
       output {
-        metrics = [otelcol.processor.batch.metrics.input.mimir]
+        metrics = [otelcol.processor.batch.metrics_export.input]
       }
     }
 
-    // =========================================
-    // Downstream Batch Processors
-    // =========================================
-    otelcol.processor.batch "logs.loki" {
+    // =====================================================
+    // 5. BATCH (after Kafka)
+    // =====================================================
+    otelcol.processor.batch "logs_export" {
       output {
         logs = [otelcol.exporter.loki.default.input]
       }
     }
 
-    otelcol.processor.batch "traces.tempo" {
+    otelcol.processor.batch "traces_export" {
       output {
         traces = [otelcol.exporter.otlp.tempo.input]
       }
     }
 
-    otelcol.processor.batch "metrics.mimir" {
+    otelcol.processor.batch "metrics_export" {
       output {
         metrics = [otelcol.exporter.prometheus.mimir.input]
       }
     }
 
-    // =========================================
-    // Original Backends
-    // =========================================
+    // =====================================================
+    // 6. BACKENDS
+    // =====================================================
     otelcol.exporter.loki "default" {
       forward_to = [loki.write.default.receiver]
     }
@@ -255,7 +254,9 @@ data:
     otelcol.exporter.otlp "tempo" {
       client {
         endpoint = "http://tempo:4317"
-        tls { insecure = true }
+        tls {
+          insecure = true
+        }
       }
     }
 
@@ -268,3 +269,4 @@ data:
         url = "http://mimir:9009/api/v1/push"
       }
     }
+####################################################################################
