@@ -1,3 +1,6 @@
+################## KUBERNETES SECRET #########################################
+
+
 kubectl create secret generic aiven-kafka-tls \
   --namespace logging \
   --from-file=ca.pem \
@@ -5,3 +8,4 @@ kubectl create secret generic aiven-kafka-tls \
   --from-file=service.key
 
 
+##############################################################################
