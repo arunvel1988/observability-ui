@@ -85,15 +85,12 @@ metadata:
   namespace: logging
 data:
   config.alloy: |
-  
+    // =====================================================
+    // 1. OTLP RECEIVER (apps → Alloy)
+    // =====================================================
     otelcol.receiver.otlp "default" {
-      grpc {
-        endpoint = "0.0.0.0:4317"
-      }
-
-      http {
-        endpoint = "0.0.0.0:4318"
-      }
+      grpc { endpoint = "0.0.0.0:4317" }
+      http { endpoint = "0.0.0.0:4318" }
 
       output {
         logs    = [otelcol.processor.batch.logs_ingest.input]
@@ -102,32 +99,29 @@ data:
       }
     }
 
- 
+    // =====================================================
+    // 2. BATCH BEFORE KAFKA
+    // =====================================================
     otelcol.processor.batch "logs_ingest" {
-      output {
-        logs = [otelcol.exporter.kafka.logs.input]
-      }
+      output { logs = [otelcol.exporter.kafka.logs.input] }
     }
 
     otelcol.processor.batch "traces_ingest" {
-      output {
-        traces = [otelcol.exporter.kafka.traces.input]
-      }
+      output { traces = [otelcol.exporter.kafka.traces.input] }
     }
 
     otelcol.processor.batch "metrics_ingest" {
-      output {
-        metrics = [otelcol.exporter.kafka.metrics.input]
-      }
+      output { metrics = [otelcol.exporter.kafka.metrics.input] }
     }
 
     // =====================================================
     // 3. KAFKA EXPORTERS (produce)
     // =====================================================
     otelcol.exporter.kafka "logs" {
-      brokers  = ["arunvel1988-kafka-arunvel1988.e.aivencloud.com:14253"]
-      topic    = "otel-logs"
-      encoding = "otlp_proto"
+      brokers          = ["arunvel1988-kafka-arunvel1988.e.aivencloud.com:14253"]
+      topic            = "otel-logs"
+      encoding         = "otlp_proto"
+      protocol_version = "2.6.0"
 
       tls {
         insecure  = false
@@ -138,9 +132,10 @@ data:
     }
 
     otelcol.exporter.kafka "traces" {
-      brokers  = ["arunvel1988-kafka-arunvel1988.e.aivencloud.com:14253"]
-      topic    = "otel-traces"
-      encoding = "otlp_proto"
+      brokers          = ["arunvel1988-kafka-arunvel1988.e.aivencloud.com:14253"]
+      topic            = "otel-traces"
+      encoding         = "otlp_proto"
+      protocol_version = "2.6.0"
 
       tls {
         insecure  = false
@@ -151,9 +146,10 @@ data:
     }
 
     otelcol.exporter.kafka "metrics" {
-      brokers  = ["arunvel1988-kafka-arunvel1988.e.aivencloud.com:14253"]
-      topic    = "otel-metrics"
-      encoding = "otlp_proto"
+      brokers          = ["arunvel1988-kafka-arunvel1988.e.aivencloud.com:14253"]
+      topic            = "otel-metrics"
+      encoding         = "otlp_proto"
+      protocol_version = "2.6.0"
 
       tls {
         insecure  = false
@@ -167,9 +163,10 @@ data:
     // 4. KAFKA RECEIVERS (consume)
     // =====================================================
     otelcol.receiver.kafka "logs" {
-      brokers  = ["arunvel1988-kafka-arunvel1988.e.aivencloud.com:14253"]
-      topics   = ["otel-logs"]
-      encoding = "otlp_proto"
+      brokers          = ["arunvel1988-kafka-arunvel1988.e.aivencloud.com:14253"]
+      topic            = "otel-logs"
+      encoding         = "otlp_proto"
+      protocol_version = "2.6.0"
 
       tls {
         insecure  = false
@@ -178,15 +175,14 @@ data:
         key_file  = "/etc/kafka/service.key"
       }
 
-      output {
-        logs = [otelcol.processor.batch.logs_export.input]
-      }
+      output { logs = [otelcol.processor.batch.logs_export.input] }
     }
 
     otelcol.receiver.kafka "traces" {
-      brokers  = ["arunvel1988-kafka-arunvel1988.e.aivencloud.com:14253"]
-      topics   = ["otel-traces"]
-      encoding = "otlp_proto"
+      brokers          = ["arunvel1988-kafka-arunvel1988.e.aivencloud.com:14253"]
+      topic            = "otel-traces"
+      encoding         = "otlp_proto"
+      protocol_version = "2.6.0"
 
       tls {
         insecure  = false
@@ -195,15 +191,14 @@ data:
         key_file  = "/etc/kafka/service.key"
       }
 
-      output {
-        traces = [otelcol.processor.batch.traces_export.input]
-      }
+      output { traces = [otelcol.processor.batch.traces_export.input] }
     }
 
     otelcol.receiver.kafka "metrics" {
-      brokers  = ["arunvel1988-kafka-arunvel1988.e.aivencloud.com:14253"]
-      topics   = ["otel-metrics"]
-      encoding = "otlp_proto"
+      brokers          = ["arunvel1988-kafka-arunvel1988.e.aivencloud.com:14253"]
+      topic            = "otel-metrics"
+      encoding         = "otlp_proto"
+      protocol_version = "2.6.0"
 
       tls {
         insecure  = false
@@ -212,30 +207,22 @@ data:
         key_file  = "/etc/kafka/service.key"
       }
 
-      output {
-        metrics = [otelcol.processor.batch.metrics_export.input]
-      }
+      output { metrics = [otelcol.processor.batch.metrics_export.input] }
     }
 
     // =====================================================
-    // 5. BATCH (after Kafka)
+    // 5. BATCH AFTER KAFKA
     // =====================================================
     otelcol.processor.batch "logs_export" {
-      output {
-        logs = [otelcol.exporter.loki.default.input]
-      }
+      output { logs = [otelcol.exporter.loki.default.input] }
     }
 
     otelcol.processor.batch "traces_export" {
-      output {
-        traces = [otelcol.exporter.otlp.tempo.input]
-      }
+      output { traces = [otelcol.exporter.otlp.tempo.input] }
     }
 
     otelcol.processor.batch "metrics_export" {
-      output {
-        metrics = [otelcol.exporter.prometheus.mimir.input]
-      }
+      output { metrics = [otelcol.exporter.prometheus.mimir.input] }
     }
 
     // =====================================================
@@ -246,17 +233,13 @@ data:
     }
 
     loki.write "default" {
-      endpoint {
-        url = "http://loki:3100/loki/api/v1/push"
-      }
+      endpoint { url = "http://loki:3100/loki/api/v1/push" }
     }
 
     otelcol.exporter.otlp "tempo" {
       client {
         endpoint = "http://tempo:4317"
-        tls {
-          insecure = true
-        }
+        tls { insecure = true }
       }
     }
 
@@ -265,8 +248,8 @@ data:
     }
 
     prometheus.remote_write "mimir" {
-      endpoint {
-        url = "http://mimir:9009/api/v1/push"
-      }
+      endpoint { url = "http://mimir:9009/api/v1/push" }
     }
+
+
 ####################################################################################
