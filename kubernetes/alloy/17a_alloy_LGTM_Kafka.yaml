@@ -1,1 +1,259 @@
 
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: alloy
+  namespace: logging
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: alloy
+  template:
+    metadata:
+      labels:
+        app: alloy
+    spec:
+      containers:
+        - name: alloy
+          image: grafana/alloy:v1.10.0
+          args:
+            - "run"
+            - "--server.http.listen-addr=0.0.0.0:12345"
+            - "--stability.level=experimental"
+            - "--storage.path=/var/lib/alloy/data"
+            - "/etc/alloy/config.alloy"
+          ports:
+            - containerPort: 12345
+              name: http
+            - containerPort: 4317
+              name: otlp-grpc
+            - containerPort: 4318
+              name: otlp-http
+          volumeMounts:
+            - name: alloy-config
+              mountPath: /etc/alloy
+      volumes:
+        - name: alloy-config
+          configMap:
+            name: alloy-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: alloy
+  namespace: logging
+spec:
+  selector:
+    app: alloy
+  ports:
+    - name: http
+      port: 12345
+      targetPort: 12345
+      protocol: TCP
+    - name: otlp-grpc
+      port: 4317
+      targetPort: 4317
+      protocol: TCP
+    - name: otlp-http
+      port: 4318
+      targetPort: 4318
+      protocol: TCP
+  type: ClusterIP
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: alloy-config
+  namespace: logging
+data:
+  config.alloy: |
+    // =========================================
+    // OTLP Receiver for Logs, Traces & Metrics
+    // =========================================
+    otelcol.receiver.otlp "default" {
+      grpc {
+        endpoint = "0.0.0.0:4317"
+      }
+      
+      http {
+        endpoint = "0.0.0.0:4318"
+      }
+      
+      output {
+        logs    = [otelcol.processor.batch.logs.input]
+        traces  = [otelcol.processor.batch.traces.input]
+        metrics = [otelcol.processor.batch.metrics.input]
+      }
+    }
+
+    // =========================================
+    // Batch Processors (separate for each signal)
+    // =========================================
+    otelcol.processor.batch "logs" {
+      output {
+        logs = [otelcol.exporter.kafka.logs.input]
+      }
+    }
+
+    otelcol.processor.batch "traces" {
+      output {
+        traces = [otelcol.exporter.kafka.traces.input]
+      }
+    }
+
+    otelcol.processor.batch "metrics" {
+      output {
+        metrics = [otelcol.exporter.kafka.metrics.input]
+      }
+    }
+
+    // =========================================
+    // Kafka Exporters (main collector pushes here)
+    // =========================================
+    otelcol.exporter.kafka "logs" {
+      brokers  = ["arunvel1988-kafka-arunvel1988.e.aivencloud.com:14253"]
+      topic    = "otel-logs"
+      encoding = "otlp_proto"
+      tls {
+        insecure = false
+        ca_file  = "/path/to/ca.pem"
+      }
+      auth {
+        username = "<KAFKA_USERNAME>"
+        password = "<KAFKA_PASSWORD>"
+      }
+    }
+
+    otelcol.exporter.kafka "traces" {
+      brokers  = ["arunvel1988-kafka-arunvel1988.e.aivencloud.com:14253"]
+      topic    = "otel-traces"
+      encoding = "otlp_proto"
+      tls {
+        insecure = false
+        ca_file  = "/path/to/ca.pem"
+      }
+      auth {
+        username = "<KAFKA_USERNAME>"
+        password = "<KAFKA_PASSWORD>"
+      }
+    }
+
+    otelcol.exporter.kafka "metrics" {
+      brokers  = ["arunvel1988-kafka-arunvel1988.e.aivencloud.com:14253"]
+      topic    = "otel-metrics"
+      encoding = "otlp_proto"
+      tls {
+        insecure = false
+        ca_file  = "/path/to/ca.pem"
+      }
+      auth {
+        username = "<KAFKA_USERNAME>"
+        password = "<KAFKA_PASSWORD>"
+      }
+    }
+
+    // =========================================
+    // Downstream Kafka Receiver (decoupled consumers)
+    // =========================================
+    otelcol.receiver.kafka "logs" {
+      brokers  = ["arunvel1988-kafka-arunvel1988.e.aivencloud.com:14253"]
+      topics   = ["otel-logs"]
+      encoding = "otlp_proto"
+      tls {
+        insecure = false
+        ca_file  = "/path/to/ca.pem"
+      }
+      auth {
+        username = "<KAFKA_USERNAME>"
+        password = "<KAFKA_PASSWORD>"
+      }
+      output {
+        logs = [otelcol.processor.batch.logs.input.loki]
+      }
+    }
+
+    otelcol.receiver.kafka "traces" {
+      brokers  = ["arunvel1988-kafka-arunvel1988.e.aivencloud.com:14253"]
+      topics   = ["otel-traces"]
+      encoding = "otlp_proto"
+      tls {
+        insecure = false
+        ca_file  = "/path/to/ca.pem"
+      }
+      auth {
+        username = "<KAFKA_USERNAME>"
+        password = "<KAFKA_PASSWORD>"
+      }
+      output {
+        traces = [otelcol.processor.batch.traces.input.tempo]
+      }
+    }
+
+    otelcol.receiver.kafka "metrics" {
+      brokers  = ["arunvel1988-kafka-arunvel1988.e.aivencloud.com:14253"]
+      topics   = ["otel-metrics"]
+      encoding = "otlp_proto"
+      tls {
+        insecure = false
+        ca_file  = "/path/to/ca.pem"
+      }
+      auth {
+        username = "<KAFKA_USERNAME>"
+        password = "<KAFKA_PASSWORD>"
+      }
+      output {
+        metrics = [otelcol.processor.batch.metrics.input.mimir]
+      }
+    }
+
+    // =========================================
+    // Downstream Batch Processors
+    // =========================================
+    otelcol.processor.batch "logs.loki" {
+      output {
+        logs = [otelcol.exporter.loki.default.input]
+      }
+    }
+
+    otelcol.processor.batch "traces.tempo" {
+      output {
+        traces = [otelcol.exporter.otlp.tempo.input]
+      }
+    }
+
+    otelcol.processor.batch "metrics.mimir" {
+      output {
+        metrics = [otelcol.exporter.prometheus.mimir.input]
+      }
+    }
+
+    // =========================================
+    // Original Backends
+    // =========================================
+    otelcol.exporter.loki "default" {
+      forward_to = [loki.write.default.receiver]
+    }
+
+    loki.write "default" {
+      endpoint {
+        url = "http://loki:3100/loki/api/v1/push"
+      }
+    }
+
+    otelcol.exporter.otlp "tempo" {
+      client {
+        endpoint = "http://tempo:4317"
+        tls { insecure = true }
+      }
+    }
+
+    otelcol.exporter.prometheus "mimir" {
+      forward_to = [prometheus.remote_write.mimir.receiver]
+    }
+
+    prometheus.remote_write "mimir" {
+      endpoint {
+        url = "http://mimir:9009/api/v1/push"
+      }
+    }
