@@ -369,7 +369,7 @@ data:
             counter += 1
             
             if counter % 5 == 0:
-                print(f"\n📊 Generated {counter} telemetry events (logs + traces + metrics)\n")
+                print(f"\nGenerated {counter} telemetry events (logs + traces + metrics)\n")
             
             time.sleep(random.uniform(3, 7))
             
