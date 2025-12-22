@@ -1,3 +1,4 @@
+###############################################################################
 
 apiVersion: apps/v1
 kind: Deployment
@@ -31,12 +32,27 @@ spec:
             - containerPort: 4318
               name: otlp-http
           volumeMounts:
+            # Alloy config
             - name: alloy-config
               mountPath: /etc/alloy
+
+            # Aiven Kafka TLS certs
+            - name: kafka-tls
+              mountPath: /etc/kafka
+              readOnly: true
+
       volumes:
+        # Alloy config
         - name: alloy-config
           configMap:
             name: alloy-config
+
+        # Kafka TLS Secret
+        - name: kafka-tls
+          secret:
+            secretName: aiven-kafka-tls
+
+#####################################
 ---
 apiVersion: v1
 kind: Service
