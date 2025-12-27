@@ -1,0 +1,93 @@
+###########
+
+nano client.properties
+
+
+#########
+
+security.protocol=SSL
+ssl.ca.location=ca.pem
+ssl.certificate.location=service.cert
+ssl.key.location=service.key
+########
+
+
+kafka-console-consumer.sh \
+  --bootstrap-server arunvel1988-kafka-arunvel1988.e.aivencloud.com:14253 \
+  --consumer.config client.properties \
+  --topic otel-logs \
+  --from-beginning \
+  --max-messages 5
+
+###############
+
+kafka-consumer-groups.sh \
+  --bootstrap-server arunvel1988-kafka-arunvel1988.e.aivencloud.com:14253 \
+  --command-config client.properties \
+  --describe \
+  --group alloy-logs-consumer
+#######
+
+
+
+#####
+
+pip install kafka-python
+
+#### PYTHON #######
+
+
+from kafka import KafkaConsumer
+import ssl
+
+# Kafka config
+bootstrap_servers = [
+    "arunvel1988-kafka-arunvel1988.e.aivencloud.com:14253"
+]
+topic = "otel-logs"
+
+# SSL context (Aiven)
+ssl_context = ssl.create_default_context(
+    cafile="ca.pem"
+)
+ssl_context.load_cert_chain(
+    certfile="service.cert",
+    keyfile="service.key"
+)
+
+# Kafka consumer
+consumer = KafkaConsumer(
+    topic,
+    bootstrap_servers=bootstrap_servers,
+    security_protocol="SSL",
+    ssl_context=ssl_context,
+    auto_offset_reset="earliest",   # read from beginning
+    enable_auto_commit=False,
+    consumer_timeout_ms=10000       # exit if no messages
+)
+
+print("Connected to Kafka, waiting for messages...\n")
+
+count = 0
+for message in consumer:
+    print(f"--- Message {count + 1} ---")
+    print(f"Topic: {message.topic}")
+    print(f"Partition: {message.partition}")
+    print(f"Offset: {message.offset}")
+    print(f"Value (raw bytes, first 100 bytes): {message.value[:100]}")
+    print()
+
+    count += 1
+    if count >= 5:
+        break
+
+consumer.close()
+print("Done.")
+
+
+########## python ###########
+
+python3 consume_otel_logs.py
+
+
+########
