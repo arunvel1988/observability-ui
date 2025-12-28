@@ -114,13 +114,31 @@ def consume_kafka():
 # =========================
 @app.route("/")
 def index():
-    return jsonify({
-        "service": "OTEL Kafka Observability Demo",
-        "endpoints": {
-            "/logs": "Recent decoded logs",
-            "/analytics": "Log-derived analytics"
-        }
-    })
+    template = """
+    <html>
+    <head>
+        <title>OTEL Kafka Observability Demo</title>
+        <style>
+            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333; padding: 30px; }
+            h1 { color: #007BFF; }
+            .container { background: #fff; padding: 20px 30px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+            .endpoint { margin: 10px 0; font-size: 18px; }
+            a { color: #007BFF; text-decoration: none; font-weight: bold; }
+            a:hover { text-decoration: underline; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>OTEL Kafka Observability Demo</h1>
+            <p>Welcome to the observability dashboard for your Aiven OTEL Kafka project.</p>
+            <div class="endpoint"><a href="/logs">/logs</a> - View recent decoded logs</div>
+            <div class="endpoint"><a href="/analytics">/analytics</a> - View log-derived analytics</div>
+        </div>
+    </body>
+    </html>
+    """
+    return render_template_string(template)
+
 
 
 @app.route("/logs")
