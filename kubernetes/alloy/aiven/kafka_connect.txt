@@ -37,62 +37,57 @@ sudo apt install -y python3-full python3-venv
 python3 -m venv kafka-venv
 source kafka-venv/bin/activate
 
-pip install kafka-python
 
-#### PYTHON #######
+pip install confluent-kafka
 
+#### PYTHON #######################################################################################
 
-from kafka import KafkaConsumer
-import ssl
+from confluent_kafka import Consumer
 
-# Kafka config
-bootstrap_servers = [
-    "arunvel1988-kafka-arunvel1988.e.aivencloud.com:14253"
-]
-topic = "otel-logs"
+conf = {
+    "bootstrap.servers": "arunvel1988-kafka-arunvel1988.e.aivencloud.com:14253",
+    "security.protocol": "SSL",
 
-# SSL context (Aiven)
-ssl_context = ssl.create_default_context(
-    cafile="ca.pem"
-)
-ssl_context.load_cert_chain(
-    certfile="service.cert",
-    keyfile="service.key"
-)
+    "ssl.ca.location": "ca.pem",
+    "ssl.certificate.location": "service.cert",
+    "ssl.key.location": "service.key",
 
-# Kafka consumer
-consumer = KafkaConsumer(
-    topic,
-    bootstrap_servers=bootstrap_servers,
-    security_protocol="SSL",
-    ssl_context=ssl_context,
-    auto_offset_reset="earliest",   # read from beginning
-    enable_auto_commit=False,
-    consumer_timeout_ms=10000       # exit if no messages
-)
+    "group.id": "otel-log-checker",
+    "auto.offset.reset": "earliest",
 
-print("Connected to Kafka, waiting for messages...\n")
+    # Important for managed Kafka
+    "enable.partition.eof": False
+}
 
-count = 0
-for message in consumer:
-    print(f"--- Message {count + 1} ---")
-    print(f"Topic: {message.topic}")
-    print(f"Partition: {message.partition}")
-    print(f"Offset: {message.offset}")
-    print(f"Value (raw bytes, first 100 bytes): {message.value[:100]}")
-    print()
+consumer = Consumer(conf)
+consumer.subscribe(["otel-logs"])
 
-    count += 1
-    if count >= 5:
-        break
+print("Connected. Consuming messages...")
 
-consumer.close()
-print("Done.")
+try:
+    while True:
+        msg = consumer.poll(1.0)
+        if msg is None:
+            continue
+        if msg.error():
+            print("Error:", msg.error())
+            continue
+
+        print(
+            f"Partition={msg.partition()}, "
+            f"Offset={msg.offset()}, "
+            f"Bytes={len(msg.value())}"
+        )
+
+finally:
+    consumer.close()
 
 
-########## python ###########
+
+
+########## python ###################################################################################################
 
 python3 consume_otel_logs.py
 
 
-########
+######################################################################
