@@ -32,6 +32,11 @@ kafka-consumer-groups.sh \
 
 #####
 
+sudo apt update
+sudo apt install -y python3-full python3-venv
+python3 -m venv kafka-venv
+source kafka-venv/bin/activate
+
 pip install kafka-python
 
 #### PYTHON #######
