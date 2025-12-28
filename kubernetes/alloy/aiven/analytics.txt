@@ -3,7 +3,7 @@
 pip install flask confluent-kafka opentelemetry-proto
 
 ###################################################################################################
-
+from flask import Flask, jsonify, request, render_template_string
 from flask import Flask, jsonify, request
 from confluent_kafka import Consumer
 from opentelemetry.proto.collector.logs.v1.logs_service_pb2 import (
@@ -129,7 +129,7 @@ def index():
     </head>
     <body>
         <div class="container">
-            <h1>OTEL Kafka Observability Demo</h1>
+            <h1>OTEL  AIVEN Kafka Observability Demo OTEL</h1>
             <p>Welcome to the observability dashboard for your Aiven OTEL Kafka project.</p>
             <div class="endpoint"><a href="/logs">/logs</a> - View recent decoded logs</div>
             <div class="endpoint"><a href="/analytics">/analytics</a> - View log-derived analytics</div>
