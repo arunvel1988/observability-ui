@@ -1,0 +1,59 @@
+version: '3'
+
+services:
+
+  flask-app:
+    image: python:3.11
+    container_name: flask-app
+
+    working_dir: /app
+
+    volumes:
+      - ./:/app
+
+    command: >
+      sh -c "
+      pip install -r requirements.txt &&
+      python app.py
+      "
+
+    ports:
+      - "5000:5000"
+
+    depends_on:
+      - alloy
+
+  alloy:
+    image: grafana/alloy:latest
+    container_name: alloy
+
+    command:
+      - run
+      - /etc/alloy/config.alloy
+
+    volumes:
+      - ./alloy/config.alloy:/etc/alloy/config.alloy
+
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+
+    depends_on:
+      - prometheus
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+
+    ports:
+      - "9090:9090"
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+
+    ports:
+      - "3000:3000"
