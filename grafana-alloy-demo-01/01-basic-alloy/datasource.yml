@@ -1,19 +1,10 @@
 apiVersion: 1
-
-
 datasources:
-
-
-- name: Mimir
-
-
-  type: prometheus
-
-
-  access: proxy
-
-
-  url: http://mimir:9009/prometheus
-
-
-  isDefault: true
+  - name: Mimir
+    uid: mimir
+    orgId: 1
+    type: prometheus
+    access: proxy
+    url: http://mimir:9009/prometheus
+    isDefault: true
+    editable: true
