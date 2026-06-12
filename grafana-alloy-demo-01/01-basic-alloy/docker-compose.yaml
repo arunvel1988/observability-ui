@@ -16,13 +16,15 @@ services:
 
 
 
+
  alloy:
 
   image: grafana/alloy:latest
 
 
   volumes:
-   - ./config.alloy:/etc/alloy/config.alloy
+
+   - .alloy/config.alloy:/etc/alloy/config.alloy
 
 
   command:
@@ -35,12 +37,24 @@ services:
 
    - "4317:4317"
 
+   - "4318:4318"
+
+
 
 
  mimir:
 
-
   image: grafana/mimir:latest
+
+
+  command:
+
+   - "-config.file=/etc/mimir.yml"
+
+
+  volumes:
+
+   - ./mimir.yml:/etc/mimir.yml
 
 
   ports:
@@ -49,8 +63,9 @@ services:
 
 
 
- grafana:
 
+
+ grafana:
 
   image: grafana/grafana
 
@@ -58,3 +73,35 @@ services:
   ports:
 
    - "3000:3000"
+
+
+  environment:
+
+   GF_SECURITY_ADMIN_USER: admin
+
+   GF_SECURITY_ADMIN_PASSWORD: admin
+
+
+
+  volumes:
+
+
+   # datasource automatic
+
+   - ./datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml
+
+
+   # dashboard provider automatic
+
+   - ./dashboard.yml:/etc/grafana/provisioning/dashboards/dashboard.yml
+
+
+   # dashboard json automatic
+
+   - ./flask-dashboard.json:/etc/grafana/provisioning/dashboards/flask-dashboard.json
+
+
+
+  depends_on:
+
+   - mimir
