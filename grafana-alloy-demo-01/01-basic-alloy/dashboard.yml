@@ -1,0 +1,19 @@
+apiVersion: 1
+
+
+providers:
+
+
+- name: alloy
+
+
+  type: file
+
+
+  folder: Alloy
+
+
+  options:
+
+
+    path: /etc/grafana/provisioning/dashboards
