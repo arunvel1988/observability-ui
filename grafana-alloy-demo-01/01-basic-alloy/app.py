@@ -1,48 +1,63 @@
 from flask import Flask
-import logging
 
-from opentelemetry import trace
-from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
-from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.sdk.metrics import MeterProvider
+from opentelemetry.metrics import set_meter_provider
+
+from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import OTLPMetricExporter
+
+from opentelemetry.sdk.metrics.export import (
+    PeriodicExportingMetricReader
+)
 
 
 app = Flask(__name__)
 
 
-trace.set_tracer_provider(
-    TracerProvider()
-)
-
-tracer = trace.get_tracer(__name__)
-
-
-exporter = OTLPSpanExporter(
+exporter = OTLPMetricExporter(
     endpoint="http://alloy:4317",
     insecure=True
 )
 
 
-trace.get_tracer_provider().add_span_processor(
-    BatchSpanProcessor(exporter)
+reader = PeriodicExportingMetricReader(
+    exporter,
+    export_interval_millis=5000
 )
 
 
+provider = MeterProvider(
+    metric_readers=[reader]
+)
+
+
+set_meter_provider(provider)
+
+
+meter = provider.get_meter(
+    "flask-service"
+)
+
+
+counter = meter.create_counter(
+    "http_requests_total"
+)
+
+
+
 @app.route("/")
-def home():
+def hello():
 
-    with tracer.start_as_current_span(
-        "homepage-request"
-    ):
 
-        logging.warning(
-            "request received"
-        )
-
-        return {
-            "message":
-            "Hello Alloy"
+    counter.add(
+        1,
+        {
+        "endpoint":"/"
         }
+    )
+
+
+    return "metrics sent to alloy"
+
 
 
 app.run(
