@@ -1,0 +1,54 @@
+target: all
+
+
+server:
+  http_listen_port: 9009
+
+
+common:
+  storage:
+    backend: filesystem
+
+
+blocks_storage:
+
+  backend: filesystem
+
+  filesystem:
+    dir: /tmp/mimir/blocks
+
+
+compactor:
+
+  data_dir: /tmp/mimir/compactor
+
+
+ingester:
+
+  ring:
+
+    replication_factor: 1
+
+    kvstore:
+
+      store: inmemory
+
+
+distributor:
+
+  ring:
+
+    kvstore:
+
+      store: inmemory
+
+
+store_gateway:
+
+  sharding_ring:
+
+    replication_factor: 1
+
+    kvstore:
+
+      store: inmemory
