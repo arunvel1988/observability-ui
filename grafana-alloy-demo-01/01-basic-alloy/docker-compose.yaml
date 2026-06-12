@@ -1,0 +1,60 @@
+version: "3"
+
+
+services:
+
+
+ flask:
+
+  build: .
+
+  ports:
+   - "5000:5000"
+
+  depends_on:
+   - alloy
+
+
+
+ alloy:
+
+  image: grafana/alloy:latest
+
+
+  volumes:
+   - ./config.alloy:/etc/alloy/config.alloy
+
+
+  command:
+
+   - run
+   - /etc/alloy/config.alloy
+
+
+  ports:
+
+   - "4317:4317"
+
+
+
+ mimir:
+
+
+  image: grafana/mimir:latest
+
+
+  ports:
+
+   - "9009:9009"
+
+
+
+ grafana:
+
+
+  image: grafana/grafana
+
+
+  ports:
+
+   - "3000:3000"
