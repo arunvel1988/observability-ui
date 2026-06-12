@@ -4,104 +4,117 @@ version: "3"
 services:
 
 
- flask:
+  flask:
 
-  build: .
+    build: .
 
-  ports:
-   - "5000:5000"
+    container_name: flask-app
 
-  depends_on:
-   - alloy
+    ports:
+      - "5000:5000"
 
-
-
-
- alloy:
-
-  image: grafana/alloy:latest
-
-
-  volumes:
-
-   - .alloy/config.alloy:/etc/alloy/config.alloy
-
-
-  command:
-
-   - run
-   - /etc/alloy/config.alloy
-
-
-  ports:
-
-   - "4317:4317"
-
-   - "4318:4318"
+    depends_on:
+      - alloy
 
 
 
 
- mimir:
+  alloy:
 
-  image: grafana/mimir:latest
+    image: grafana/alloy:latest
 
-
-  command:
-
-   - "-config.file=/etc/mimir.yml"
+    container_name: alloy
 
 
-  volumes:
+    volumes:
 
-   - ./mimir.yml:/etc/mimir.yml
+      - ./config.alloy:/etc/alloy/config.alloy
 
 
-  ports:
+    command:
 
-   - "9009:9009"
+      - run
+      - /etc/alloy/config.alloy
+
+
+    ports:
+
+      - "4317:4317"
+
+      - "4318:4318"
+
+
+    depends_on:
+
+      - mimir
 
 
 
 
 
- grafana:
+  mimir:
 
-  image: grafana/grafana
+    image: grafana/mimir:latest
 
-
-  ports:
-
-   - "3000:3000"
+    container_name: mimir
 
 
-  environment:
+    command:
 
-   GF_SECURITY_ADMIN_USER: admin
-
-   GF_SECURITY_ADMIN_PASSWORD: admin
+      - "-config.file=/etc/mimir.yml"
 
 
+    volumes:
 
-  volumes:
-
-
-   # datasource automatic
-
-   - ./datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml
+      - ./mimir.yml:/etc/mimir.yml
 
 
-   # dashboard provider automatic
+    ports:
 
-   - ./dashboard.yml:/etc/grafana/provisioning/dashboards/dashboard.yml
-
-
-   # dashboard json automatic
-
-   - ./flask-dashboard.json:/etc/grafana/provisioning/dashboards/flask-dashboard.json
+      - "9009:9009"
 
 
 
-  depends_on:
 
-   - mimir
+
+  grafana:
+
+    image: grafana/grafana:latest
+
+    container_name: grafana
+
+
+    ports:
+
+      - "3000:3000"
+
+
+    environment:
+
+      GF_SECURITY_ADMIN_USER: admin
+
+      GF_SECURITY_ADMIN_PASSWORD: admin
+
+
+    volumes:
+
+
+      # auto create Mimir datasource
+
+      - ./datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml
+
+
+      # auto load dashboard provider
+
+      - ./dashboard.yml:/etc/grafana/provisioning/dashboards/dashboard.yml
+
+
+      # auto import dashboard
+
+      - ./flask-dashboard.json:/etc/grafana/provisioning/dashboards/flask-dashboard.json
+
+
+
+    depends_on:
+
+      - mimir
