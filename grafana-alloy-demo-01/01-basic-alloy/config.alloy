@@ -1,124 +1,66 @@
-// ======================================================
-// RECEIVER
-// Flask sends OTLP metrics here
-// ======================================================
-
-
 otelcol.receiver.otlp "flask_metrics" {
 
-
   grpc {
-
     endpoint = "0.0.0.0:4317"
-
   }
 
 
   http {
-
     endpoint = "0.0.0.0:4318"
-
   }
-
 
 
   output {
 
-
     metrics = [
-
-      otelcol.processor.memory_limiter.metrics.input
-
+      otelcol.processor.memory_limiter.metrics.input,
     ]
-
 
   }
 
 }
 
-
-
-
-
-// ======================================================
-// PROCESSOR 1
-// Protect Alloy memory
-// ======================================================
 
 
 otelcol.processor.memory_limiter "metrics" {
 
-
   check_interval = "1s"
-
 
   limit = "512MiB"
 
 
-
   output {
 
-
     metrics = [
-
-      otelcol.processor.batch.metrics.input
-
+      otelcol.processor.batch.metrics.input,
     ]
 
-
   }
-
 
 }
 
 
 
-
-
-// ======================================================
-// PROCESSOR 2
-// Batch metrics before exporting
-// ======================================================
 
 
 otelcol.processor.batch "metrics" {
 
-
   timeout = "5s"
-
-
 
   send_batch_size = 1000
 
 
-
   output {
 
-
     metrics = [
-
-      otelcol.exporter.prometheus.metrics.input
-
+      otelcol.exporter.prometheus.metrics.input,
     ]
 
-
   }
-
 
 }
 
 
-
-
-
-// ======================================================
-// EXPORTER
-//
-// OTEL metrics
-//      |
-//      v
-// Prometheus format inside Alloy
-// ======================================================
 
 
 
@@ -127,10 +69,9 @@ otelcol.exporter.prometheus "metrics" {
 
   forward_to = [
 
-    prometheus.relabel.metrics_processing.receiver
+    prometheus.relabel.metrics_processing.receiver,
 
   ]
-
 
 }
 
@@ -138,72 +79,41 @@ otelcol.exporter.prometheus "metrics" {
 
 
 
-// ======================================================
-// PROCESSING
-//
-// Add labels
-// Drop unwanted metrics
-// Rename / filter
-// ======================================================
-
-
 
 prometheus.relabel "metrics_processing" {
 
 
 
-
-  // add environment label
-
-
   rule {
-
 
     target_label = "environment"
 
-
     replacement = "dev"
-
 
   }
 
-
-
-
-  // add service label
 
 
   rule {
 
-
     target_label = "service"
 
-
     replacement = "flask-api"
-
 
   }
 
 
-
-
-
-  // remove unwanted python runtime metrics
 
 
   rule {
 
 
     source_labels = [
-
-      "__name__"
-
+      "__name__",
     ]
 
 
-
     regex = "python_.*"
-
 
 
     action = "drop"
@@ -217,9 +127,7 @@ prometheus.relabel "metrics_processing" {
 
   forward_to = [
 
-
-    prometheus.remote_write.mimir.receiver
-
+    prometheus.remote_write.mimir.receiver,
 
   ]
 
@@ -231,24 +139,16 @@ prometheus.relabel "metrics_processing" {
 
 
 
-// ======================================================
-// EXPORTER
-//
-// Send final metrics into Mimir
-// ======================================================
-
-
-
 prometheus.remote_write "mimir" {
 
 
-  endpoint {
+ endpoint {
 
 
-    url = "http://mimir:9009/api/v1/push"
+  url = "http://mimir:9009/api/v1/push"
 
 
-  }
+ }
 
 
 }
