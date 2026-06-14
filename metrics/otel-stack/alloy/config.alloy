@@ -10,135 +10,58 @@ otelcol.receiver.otlp "default" {
 
 
   output {
-
     metrics = [
-      otelcol.processor.attributes.add_labels.input,
-    ]
-
-  }
-
-}
-
-
-
-otelcol.processor.attributes "add_labels" {
-
-
-  action {
-
-    key = "environment"
-
-    value = "dev"
-
-    action = "insert"
-
-  }
-
-
-  action {
-
-    key = "team"
-
-    value = "payments"
-
-    action = "insert"
-
-  }
-
-
-  output {
-
-    metrics = [
-
       otelcol.processor.batch.default.input,
-
     ]
-
   }
 
 }
-
 
 
 
 otelcol.processor.batch "default" {
 
-
   output {
 
-
     metrics = [
-
-      otelcol.exporter.logging.default.input,
-
       otelcol.exporter.prometheus.default.input,
-
     ]
-
 
   }
 
-
 }
-
-
-
-
-
-otelcol.exporter.logging "default" {
-
-  verbosity = "detailed"
-
-}
-
-
-
 
 
 
 otelcol.exporter.prometheus "default" {
 
-
   forward_to = [
-
     prometheus.remote_write.prometheus.receiver,
-
     prometheus.remote_write.mimir.receiver,
-
   ]
 
-
 }
-
-
 
 
 
 prometheus.remote_write "prometheus" {
 
+  endpoint {
 
- endpoint {
+    url = "http://prometheus:9090/api/v1/write"
 
-   url = "http://prometheus:9090/api/v1/write"
-
- }
-
+  }
 
 }
 
 
 
-
 prometheus.remote_write "mimir" {
 
+  endpoint {
 
- endpoint {
+    url = "http://mimir:9009/api/v1/push"
 
-
-   url = "http://mimir:9009/api/v1/push"
-
-
- }
-
+  }
 
 }
