@@ -1,142 +1,69 @@
-version: "3"
+server:
+  http_listen_port: 9009
 
 
-services:
+common:
+  storage:
+    backend: s3
 
+    s3:
+      endpoint: minio:9000
+      access_key_id: admin
+      secret_access_key: password123
+      insecure: true
 
-  flask-app:
-    image: python:3.11
-    container_name: flask-app
 
-    working_dir: /app
 
-    volumes:
-      - ./:/app
+blocks_storage:
 
-    command: >
-      sh -c "
-      pip install -r requirements.txt &&
-      python app.py
-      "
+  backend: s3
 
-    ports:
-      - "5000:5000"
+  s3:
+    bucket_name: mimir-blocks
 
-    depends_on:
-      - alloy
 
+ruler_storage:
 
+  backend: s3
 
-  alloy:
-    image: grafana/alloy:latest
-    container_name: alloy
+  s3:
+    bucket_name: mimir-ruler
 
-    command:
-      - run
-      - /etc/alloy/config.alloy
 
-    volumes:
-      - ./alloy/config.alloy:/etc/alloy/config.alloy
+alertmanager_storage:
 
-    ports:
-      - "4317:4317"
-      - "4318:4318"
+  backend: s3
 
+  s3:
+    bucket_name: mimir-alerts
 
 
 
-  prometheus:
+compactor:
 
-    image: prom/prometheus
+  data_dir: /tmp/mimir-compactor
 
-    container_name: prometheus
 
-    command:
-      - "--config.file=/etc/prometheus/prometheus.yml"
-      - "--web.enable-remote-write-receiver"
 
-    volumes:
-      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+ingester:
 
-    ports:
-      - "9090:9090"
+  ring:
 
+    replication_factor: 1
 
 
 
-  mimir:
+distributor:
 
-    image: grafana/mimir:latest
+  ring:
 
-    container_name: mimir
+    kvstore:
+      store: inmemory
 
-    command:
-      - "-config.file=/etc/mimir/mimir.yaml"
 
-    volumes:
-      - ./mimir/mimir.yaml:/etc/mimir/mimir.yaml
 
-    ports:
-      - "9009:9009"
+store_gateway:
 
-    depends_on:
-      - minio
+  sharding_ring:
 
-
-
-
-
-  minio:
-
-    image: minio/minio
-
-    container_name: minio
-
-
-    command:
-      server /data --console-address ":9001"
-
-
-    environment:
-
-      MINIO_ROOT_USER: admin
-
-      MINIO_ROOT_PASSWORD: password123
-
-
-    volumes:
-
-      - minio-data:/data
-
-
-    ports:
-
-      - "9000:9000"
-
-      - "9001:9001"
-
-
-
-
-
-  grafana:
-
-    image: grafana/grafana
-
-    container_name: grafana
-
-
-    ports:
-      - "3000:3000"
-
-
-    volumes:
-
-      - ./grafana/provisioning:/etc/grafana/provisioning
-
-
-
-
-volumes:
-
-  minio-data:
+    replication_factor: 1
