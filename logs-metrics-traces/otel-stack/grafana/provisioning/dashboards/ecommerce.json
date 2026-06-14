@@ -1,0 +1,213 @@
+{
+  "uid": "ecommerce-lgtm",
+  "title": "Ecommerce LGTM Observability",
+
+  "timezone": "browser",
+
+  "schemaVersion": 39,
+
+  "version": 1,
+
+
+  "panels": [
+
+
+    {
+      "title": "Cart Count",
+      "type": "stat",
+
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+
+      "targets": [
+        {
+          "expr": "cart_count_total"
+        }
+      ],
+
+
+      "gridPos": {
+        "x":0,
+        "y":0,
+        "w":6,
+        "h":6
+      }
+    },
+
+
+
+    {
+      "title": "Checkout Count",
+      "type": "stat",
+
+
+      "datasource": {
+        "type":"prometheus",
+        "uid":"prometheus"
+      },
+
+
+      "targets":[
+        {
+          "expr":"checkout_count_total"
+        }
+      ],
+
+
+      "gridPos":{
+        "x":6,
+        "y":0,
+        "w":6,
+        "h":6
+      }
+    },
+
+
+
+    {
+      "title":"Cart Traffic Rate",
+
+      "type":"timeseries",
+
+
+      "datasource":{
+
+        "type":"prometheus",
+
+        "uid":"prometheus"
+
+      },
+
+
+      "targets":[
+
+        {
+
+          "expr":"rate(cart_count_total[1m])"
+
+        }
+
+      ],
+
+
+      "gridPos":{
+
+        "x":0,
+
+        "y":6,
+
+        "w":12,
+
+        "h":8
+
+      }
+
+    },
+
+
+
+
+    {
+
+      "title":"Application Logs",
+
+
+      "type":"logs",
+
+
+      "datasource":{
+
+
+        "type":"loki",
+
+        "uid":"loki"
+
+      },
+
+
+
+      "targets":[
+
+        {
+
+          "expr":"{service_name=\"ecommerce-app\"}"
+
+        }
+
+      ],
+
+
+
+      "gridPos":{
+
+        "x":0,
+
+        "y":14,
+
+        "w":24,
+
+        "h":8
+
+      }
+
+    },
+
+
+
+
+    {
+
+
+      "title":"Errors From Application",
+
+
+      "type":"logs",
+
+
+      "datasource":{
+
+
+        "type":"loki",
+
+        "uid":"loki"
+
+      },
+
+
+      "targets":[
+
+        {
+
+
+          "expr":"{service_name=\"ecommerce-app\"} |= \"error\""
+
+
+        }
+
+
+      ],
+
+
+
+      "gridPos":{
+
+
+        "x":0,
+
+        "y":22,
+
+        "w":24,
+
+        "h":8
+
+
+      }
+
+    }
+
+
+  ]
+
+}
