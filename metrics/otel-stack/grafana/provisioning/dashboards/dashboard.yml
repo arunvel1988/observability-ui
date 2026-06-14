@@ -1,0 +1,15 @@
+apiVersion: 1
+
+
+providers:
+
+- name: ecommerce
+
+  type: file
+
+  folder: Ecommerce
+
+
+  options:
+
+    path: /etc/grafana/provisioning/dashboards
