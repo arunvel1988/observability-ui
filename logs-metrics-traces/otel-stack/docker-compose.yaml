@@ -1,138 +1,291 @@
-version: "3"
+version: "3.8"
+
 
 services:
 
- flask-app:
-  image: python:3.11
-  container_name: flask-app
-  working_dir: /app
 
-  volumes:
-   - ./:/app
+  # ==========================
+  # Flask Application
+  # ==========================
 
-  command: >
-   sh -c "
-   pip install -r requirements.txt &&
-   python app.py"
+  flask-app:
 
-  ports:
-   - "5000:5000"
+    image: python:3.11
 
+    container_name: flask-app
 
+    working_dir: /app
 
 
- alloy:
+    volumes:
 
-  image: grafana/alloy
+      - ./:/app
 
-  container_name: alloy
 
+    command: >
+      sh -c "
+      pip install -r requirements.txt &&
+      python app.py
+      "
 
-  command:
-   - run
-   - /etc/alloy/config.alloy
 
+    ports:
 
-  volumes:
+      - "5000:5000"
 
-   - ./alloy/config.alloy:/etc/alloy/config.alloy
 
+    depends_on:
 
-  ports:
+      - alloy
 
-   - "4317:4317"
 
 
 
 
+  # ==========================
+  # Grafana Alloy
+  # OTEL Collector
+  # ==========================
 
- prometheus:
 
-  image: prom/prometheus
+  alloy:
 
-  container_name: prometheus
+    image: grafana/alloy:latest
 
+    container_name: alloy
 
-  command:
 
-  - "--config.file=/etc/prometheus/prometheus.yml"
+    command:
 
-  - "--web.enable-remote-write-receiver"
+      - run
 
+      - /etc/alloy/config.alloy
 
-  volumes:
 
-  - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    volumes:
 
+      - ./alloy/config.alloy:/etc/alloy/config.alloy
 
-  ports:
 
-  - "9090:9090"
+    ports:
 
+      - "4317:4317"
 
+      - "4318:4318"
 
 
- loki:
 
-  image: grafana/loki
 
-  container_name: loki
 
+  # ==========================
+  # Prometheus
+  # short term metrics
+  # ==========================
 
-  volumes:
 
-  - ./loki/loki.yaml:/etc/loki/loki.yaml
+  prometheus:
 
+    image: prom/prometheus:latest
 
-  command:
+    container_name: prometheus
 
-  - "-config.file=/etc/loki/loki.yaml"
 
+    command:
 
-  ports:
+      - "--config.file=/etc/prometheus/prometheus.yml"
 
-  - "3100:3100"
+      - "--web.enable-remote-write-receiver"
 
 
+    volumes:
 
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
 
- tempo:
 
-  image: grafana/tempo
+    ports:
 
-  container_name: tempo
+      - "9090:9090"
 
 
-  volumes:
 
-  - ./tempo/tempo.yaml:/etc/tempo.yaml
 
 
-  command:
+  # ==========================
+  # Mimir
+  # long term metrics
+  # ==========================
 
-  - "-config.file=/etc/tempo.yaml"
 
+  mimir:
 
-  ports:
+    image: grafana/mimir:latest
 
-  - "3200:3200"
+    container_name: mimir
 
 
+    command:
 
+      - "-config.file=/etc/mimir/mimir.yaml"
 
 
- grafana:
+    volumes:
 
-  image: grafana/grafana
+      - ./mimir/mimir.yaml:/etc/mimir/mimir.yaml
 
-  container_name: grafana
 
+    ports:
 
-  volumes:
+      - "9009:9009"
 
-  - ./grafana/provisioning:/etc/grafana/provisioning
 
+    depends_on:
 
-  ports:
+      - minio
 
-  - "3000:3000"
+
+
+
+
+  # ==========================
+  # MinIO
+  # S3 backend for Mimir
+  # ==========================
+
+
+  minio:
+
+    image: minio/minio:latest
+
+    container_name: minio
+
+
+    command:
+
+      server /data --console-address ":9001"
+
+
+    environment:
+
+      MINIO_ROOT_USER: admin
+
+      MINIO_ROOT_PASSWORD: password123
+
+
+    volumes:
+
+      - minio-data:/data
+
+
+    ports:
+
+      - "9000:9000"
+
+      - "9001:9001"
+
+
+
+
+
+  # ==========================
+  # Loki
+  # Logs backend
+  # ==========================
+
+
+  loki:
+
+    image: grafana/loki:latest
+
+    container_name: loki
+
+
+    command:
+
+      - "-config.file=/etc/loki/loki.yaml"
+
+
+    volumes:
+
+      - ./loki/loki.yaml:/etc/loki/loki.yaml
+
+
+    ports:
+
+      - "3100:3100"
+
+
+
+
+
+  # ==========================
+  # Tempo
+  # Tracing backend
+  # ==========================
+
+
+  tempo:
+
+    image: grafana/tempo:latest
+
+    container_name: tempo
+
+
+    command:
+
+      - "-config.file=/etc/tempo/tempo.yaml"
+
+
+    volumes:
+
+      - ./tempo/tempo.yaml:/etc/tempo/tempo.yaml
+
+
+    ports:
+
+      - "3200:3200"
+
+      - "4319:4317"
+
+
+
+
+
+  # ==========================
+  # Grafana
+  # Visualization
+  # ==========================
+
+
+  grafana:
+
+    image: grafana/grafana:latest
+
+    container_name: grafana
+
+
+    ports:
+
+      - "3000:3000"
+
+
+    volumes:
+
+      - ./grafana/provisioning:/etc/grafana/provisioning
+
+
+    depends_on:
+
+      - prometheus
+
+      - mimir
+
+      - loki
+
+      - tempo
+
+
+
+
+volumes:
+
+  minio-data:
