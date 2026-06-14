@@ -1,0 +1,138 @@
+version: "3"
+
+services:
+
+ flask-app:
+  image: python:3.11
+  container_name: flask-app
+  working_dir: /app
+
+  volumes:
+   - ./:/app
+
+  command: >
+   sh -c "
+   pip install -r requirements.txt &&
+   python app.py"
+
+  ports:
+   - "5000:5000"
+
+
+
+
+ alloy:
+
+  image: grafana/alloy
+
+  container_name: alloy
+
+
+  command:
+   - run
+   - /etc/alloy/config.alloy
+
+
+  volumes:
+
+   - ./alloy/config.alloy:/etc/alloy/config.alloy
+
+
+  ports:
+
+   - "4317:4317"
+
+
+
+
+
+ prometheus:
+
+  image: prom/prometheus
+
+  container_name: prometheus
+
+
+  command:
+
+  - "--config.file=/etc/prometheus/prometheus.yml"
+
+  - "--web.enable-remote-write-receiver"
+
+
+  volumes:
+
+  - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+
+
+  ports:
+
+  - "9090:9090"
+
+
+
+
+ loki:
+
+  image: grafana/loki
+
+  container_name: loki
+
+
+  volumes:
+
+  - ./loki/loki.yaml:/etc/loki/loki.yaml
+
+
+  command:
+
+  - "-config.file=/etc/loki/loki.yaml"
+
+
+  ports:
+
+  - "3100:3100"
+
+
+
+
+ tempo:
+
+  image: grafana/tempo
+
+  container_name: tempo
+
+
+  volumes:
+
+  - ./tempo/tempo.yaml:/etc/tempo.yaml
+
+
+  command:
+
+  - "-config.file=/etc/tempo.yaml"
+
+
+  ports:
+
+  - "3200:3200"
+
+
+
+
+
+ grafana:
+
+  image: grafana/grafana
+
+  container_name: grafana
+
+
+  volumes:
+
+  - ./grafana/provisioning:/etc/grafana/provisioning
+
+
+  ports:
+
+  - "3000:3000"
