@@ -1,0 +1,18 @@
+global:
+  scrape_interval: 10s
+  evaluation_interval: 10s
+
+  external_labels:
+    cluster: local-docker
+    environment: dev
+
+
+scrape_configs:
+
+  # Prometheus self monitoring
+  - job_name: prometheus
+
+    static_configs:
+
+      - targets:
+          - localhost:9090
