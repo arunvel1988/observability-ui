@@ -1,0 +1,139 @@
+version: "3"
+
+services:
+
+  flask-app:
+    image: python:3.11
+    container_name: flask-app
+
+    working_dir: /app
+
+    volumes:
+      - ./:/app
+
+    command: >
+      sh -c "
+      pip install -r requirements.txt &&
+      python app.py
+      "
+
+    ports:
+      - "5000:5000"
+
+    depends_on:
+      - alloy
+
+
+
+  alloy:
+    image: grafana/alloy:latest
+    container_name: alloy
+
+    command:
+      - run
+      - /etc/alloy/config.alloy
+
+    volumes:
+      - ./alloy/config.alloy:/etc/alloy/config.alloy
+
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+
+
+
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+
+
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--web.enable-remote-write-receiver"
+
+
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+
+
+    ports:
+      - "9090:9090"
+
+
+
+
+  mimir:
+    image: grafana/mimir:latest
+    container_name: mimir
+
+    command:
+      - "-config.file=/etc/mimir/mimir.yaml"
+
+
+    volumes:
+      - ./mimir/mimir.yaml:/etc/mimir/mimir.yaml
+
+
+    ports:
+      - "9009:9009"
+
+    depends_on:
+      - minio
+
+
+
+
+  minio:
+    image: minio/minio
+    container_name: minio
+
+
+    command:
+      server /data --console-address ":9001"
+
+
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: password123
+
+
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+
+
+
+
+  loki:
+    image: grafana/loki:latest
+    container_name: loki
+
+
+    command:
+      - "-config.file=/etc/loki/loki.yaml"
+
+
+    volumes:
+      - ./loki/loki.yaml:/etc/loki/loki.yaml
+
+
+    ports:
+      - "3100:3100"
+
+
+
+
+  grafana:
+
+    image: grafana/grafana
+
+    container_name: grafana
+
+
+    ports:
+      - "3000:3000"
+
+
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
