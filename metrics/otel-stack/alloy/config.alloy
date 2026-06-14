@@ -1,20 +1,26 @@
-otelcol.receiver.otlp "app" {
+otelcol.receiver.otlp "default" {
 
 
-grpc {
+ grpc {
+
  endpoint="0.0.0.0:4317"
+
+ }
+
+
+ output {
+
+ metrics=[
+
+ otelcol.processor.batch.default.input
+
+ ]
+
+ }
+
 }
 
 
-output {
-
-metrics=[
-otelcol.processor.batch.default.input
-]
-
-}
-
-}
 
 
 otelcol.processor.batch "default" {
@@ -22,13 +28,18 @@ otelcol.processor.batch "default" {
 
 output {
 
+
 metrics=[
+
 otelcol.exporter.prometheus.default.input
+
 ]
 
+
 }
 
 }
+
 
 
 
@@ -37,17 +48,22 @@ otelcol.exporter.prometheus "default" {
 
 forward_to=[
 
-prometheus.remote_write.prom.receiver,
+
+prometheus.remote_write.prometheus.receiver,
+
 
 prometheus.remote_write.mimir.receiver
 
+
 ]
+
 
 }
 
 
 
-prometheus.remote_write "prom" {
+
+prometheus.remote_write "prometheus" {
 
 
 endpoint {
@@ -56,8 +72,8 @@ url="http://prometheus:9090/api/v1/write"
 
 }
 
-
 }
+
 
 
 
