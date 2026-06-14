@@ -68,9 +68,8 @@ metric_exporter = OTLPMetricExporter(
 
 
 reader = PeriodicExportingMetricReader(
-
-    metric_exporter
-
+    metric_exporter,
+    export_interval_millis=5000
 )
 
 
