@@ -1,0 +1,41 @@
+{
+"title":"Flask Observability",
+
+"schemaVersion":39,
+
+"panels":[
+
+
+{
+"title":"Cart Count",
+
+"type":"stat",
+
+"targets":[
+
+{
+"expr":"cart_count_total"
+}
+
+]
+},
+
+
+
+{
+"title":"Checkout Count",
+
+"type":"stat",
+
+"targets":[
+
+{
+"expr":"checkout_count_total"
+}
+
+]
+}
+
+
+]
+}
