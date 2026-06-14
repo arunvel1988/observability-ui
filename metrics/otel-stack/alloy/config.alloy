@@ -4,41 +4,100 @@ otelcol.receiver.otlp "default" {
     endpoint = "0.0.0.0:4317"
   }
 
-  http {
-    endpoint = "0.0.0.0:4318"
-  }
-
 
   output {
     metrics = [
-      otelcol.processor.batch.default.input,
+      otelcol.processor.resource.add_labels.input,
     ]
   }
 
 }
+
+
+
+otelcol.processor.resource "add_labels" {
+
+
+  attributes {
+
+    action = "insert"
+
+    key = "environment"
+
+    value = "dev"
+
+  }
+
+
+  attributes {
+
+    action = "insert"
+
+    key = "team"
+
+    value = "payments"
+
+  }
+
+
+
+  output {
+
+    metrics = [
+
+      otelcol.processor.batch.default.input,
+
+    ]
+
+  }
+
+}
+
 
 
 
 otelcol.processor.batch "default" {
 
-  output {
 
-    metrics = [
-      otelcol.exporter.prometheus.default.input,
-    ]
+ output {
 
-  }
+
+  metrics = [
+
+    otelcol.exporter.debug.default.input,
+
+    otelcol.exporter.prometheus.default.input,
+
+  ]
+
+
+ }
+
 
 }
 
 
 
+otelcol.exporter.debug "default" {
+
+  verbosity = "detailed"
+
+}
+
+
+
+
 otelcol.exporter.prometheus "default" {
 
-  forward_to = [
-    prometheus.remote_write.prometheus.receiver,
-    prometheus.remote_write.mimir.receiver,
-  ]
+
+ forward_to = [
+
+  prometheus.remote_write.prometheus.receiver,
+
+  prometheus.remote_write.mimir.receiver,
+
+ ]
+
 
 }
 
@@ -46,11 +105,11 @@ otelcol.exporter.prometheus "default" {
 
 prometheus.remote_write "prometheus" {
 
-  endpoint {
+ endpoint {
 
-    url = "http://prometheus:9090/api/v1/write"
+  url="http://prometheus:9090/api/v1/write"
 
-  }
+ }
 
 }
 
@@ -58,10 +117,12 @@ prometheus.remote_write "prometheus" {
 
 prometheus.remote_write "mimir" {
 
-  endpoint {
 
-    url = "http://mimir:9009/api/v1/push"
+ endpoint {
 
-  }
+  url="http://mimir:9009/api/v1/push"
+
+ }
+
 
 }
