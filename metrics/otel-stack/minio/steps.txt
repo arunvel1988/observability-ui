@@ -1,0 +1,12 @@
+http://localhost:9001
+
+username:
+admin
+
+password:
+password123
+
+
+mimir-blocks
+mimir-ruler
+mimir-alerts
