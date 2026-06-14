@@ -1,0 +1,38 @@
+{
+  "uid": "ecommerce",
+  "title": "Ecommerce Dashboard",
+  "schemaVersion": 39,
+  "version": 1,
+  "panels": [
+    {
+      "title": "Cart Count",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "cart_count_total"
+        }
+      ],
+      "gridPos": {
+        "x":0,
+        "y":0,
+        "w":12,
+        "h":8
+      }
+    },
+    {
+      "title": "Checkout Count",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "checkout_success_total"
+        }
+      ],
+      "gridPos": {
+        "x":12,
+        "y":0,
+        "w":12,
+        "h":8
+      }
+    }
+  ]
+}
