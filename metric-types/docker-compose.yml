@@ -1,0 +1,104 @@
+services:
+
+
+ ecommerce:
+
+
+  build: ./app
+
+
+  ports:
+
+   - "5000:5000"
+
+
+  depends_on:
+
+   - alloy
+
+
+
+
+
+ alloy:
+
+
+  image: grafana/alloy:latest
+
+
+  command:
+
+   - run
+
+   - /etc/alloy/config.alloy
+
+   - --server.http.listen-addr=0.0.0.0:12345
+
+
+  volumes:
+
+   - ./config.alloy:/etc/alloy/config.alloy
+
+
+  ports:
+
+   - "4317:4317"
+
+   - "4318:4318"
+
+   - "12345:12345"
+
+
+
+
+
+
+ prometheus:
+
+
+  image: prom/prometheus
+
+
+  command:
+
+   - "--config.file=/etc/prometheus/prometheus.yml"
+
+   - "--web.enable-remote-write-receiver"
+
+
+  volumes:
+
+   - ./prometheus.yml:/etc/prometheus/prometheus.yml
+
+
+  ports:
+
+   - "9090:9090"
+
+
+
+
+
+
+ grafana:
+
+
+  image: grafana/grafana
+
+
+  ports:
+
+   - "3000:3000"
+
+
+  environment:
+
+
+   GF_SECURITY_ADMIN_PASSWORD: admin
+
+
+
+  volumes:
+
+
+   - ./grafana/provisioning:/etc/grafana/provisioning
