@@ -1,61 +1,38 @@
 otelcol.receiver.otlp "flask" {
 
+  grpc {
+    endpoint = "0.0.0.0:4317"
+  }
 
- grpc {
+  http {
+    endpoint = "0.0.0.0:4318"
+  }
 
-  endpoint = "0.0.0.0:4317"
-
- }
-
-
- http {
-
-  endpoint = "0.0.0.0:4318"
-
- }
-
-
- output {
-
-  metrics = [
-
-   otelcol.exporter.prometheus.metrics.input
-
-  ]
-
- }
-
+  output {
+    metrics = [
+      otelcol.exporter.prometheus.metrics.input,
+    ]
+  }
 }
-
-
 
 
 
 otelcol.exporter.prometheus "metrics" {
 
-
- forward_to = [
-
-  prometheus.remote_write.default.receiver
-
- ]
+  forward_to = [
+    prometheus.remote_write.default.receiver,
+  ]
 
 }
 
 
 
-
-
 prometheus.remote_write "default" {
 
+  endpoint {
 
- endpoint {
+    url = "http://prometheus:9090/api/v1/write"
 
-
-  url = "http://prometheus:9090/api/v1/write"
-
-
- }
-
+  }
 
 }
