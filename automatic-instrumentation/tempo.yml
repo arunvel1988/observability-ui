@@ -3,16 +3,42 @@ server:
 
 
 distributor:
+
   receivers:
+
     otlp:
+
       protocols:
+
         grpc:
+          endpoint: 0.0.0.0:4317
+
+        http:
+          endpoint: 0.0.0.0:4318
+
+
+ingester:
+
+  trace_idle_period: 10s
+
+  max_block_duration: 5m
+
+
+compactor:
+
+  compaction:
+
+    block_retention: 1h
 
 
 storage:
 
   trace:
+
     backend: local
 
+    wal:
+      path: /tmp/tempo/wal
+
     local:
-      path: /tmp/tempo
+      path: /tmp/tempo/blocks
