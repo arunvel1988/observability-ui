@@ -1,0 +1,7 @@
+flask
+
+opentelemetry-distro
+opentelemetry-exporter-otlp
+
+opentelemetry-instrumentation-flask
+opentelemetry-instrumentation-requests
