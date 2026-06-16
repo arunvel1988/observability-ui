@@ -1,0 +1,218 @@
+otelcol.receiver.otlp "app" {
+
+ grpc {
+  endpoint = "0.0.0.0:4317"
+ }
+
+ http {
+  endpoint = "0.0.0.0:4318"
+ }
+
+ output {
+
+  metrics = [
+   otelcol.processor.memory_limiter.default.input,
+  ]
+
+  logs = [
+   otelcol.processor.memory_limiter.default.input,
+  ]
+
+  traces = [
+   otelcol.processor.memory_limiter.default.input,
+  ]
+
+ }
+
+}
+
+
+otelcol.processor.memory_limiter "default" {
+
+ check_interval = "2s"
+
+ limit = "1GiB"
+
+ output {
+
+  metrics = [
+   otelcol.processor.batch.default.input,
+  ]
+
+  logs = [
+   otelcol.processor.batch.default.input,
+  ]
+
+  traces = [
+   otelcol.processor.tail_sampling.default.input,
+  ]
+
+ }
+
+}
+
+
+otelcol.processor.tail_sampling "default" {
+
+ decision_wait = "10s"
+
+ num_traces = 50000
+
+
+ policy {
+
+  name = "errors"
+
+  type = "status_code"
+
+  status_code {
+   status_codes = [
+    "ERROR",
+   ]
+  }
+
+ }
+
+
+ policy {
+
+  name = "slow"
+
+  type = "latency"
+
+  latency {
+   threshold_ms = 1000
+  }
+
+ }
+
+
+ policy {
+
+  name = "sample"
+
+  type = "probabilistic"
+
+  probabilistic {
+   sampling_percentage = 10
+  }
+
+ }
+
+
+ output {
+
+  traces = [
+   otelcol.processor.batch.default.input,
+  ]
+
+ }
+
+}
+
+
+
+otelcol.processor.batch "default" {
+
+ timeout = "5s"
+
+ send_batch_size = 2000
+
+ output {
+
+  metrics = [
+   otelcol.exporter.prometheus.default.input,
+  ]
+
+
+  logs = [
+   otelcol.exporter.loki.default.input,
+  ]
+
+
+  traces = [
+   otelcol.exporter.otlp.tempo.input,
+  ]
+
+ }
+
+}
+
+
+
+
+otelcol.exporter.prometheus "default" {
+
+ forward_to = [
+
+  prometheus.remote_write.prom.receiver,
+
+  prometheus.remote_write.mimir.receiver,
+
+ ]
+
+}
+
+
+
+prometheus.remote_write "prom" {
+
+ endpoint {
+
+  url = "http://prometheus:9090/api/v1/write"
+
+ }
+
+}
+
+
+
+prometheus.remote_write "mimir" {
+
+ endpoint {
+
+  url = "http://mimir:9009/api/v1/push"
+
+ }
+
+}
+
+
+
+otelcol.exporter.loki "default" {
+
+ forward_to = [
+
+  loki.write.default.receiver,
+
+ ]
+
+}
+
+
+
+loki.write "default" {
+
+ endpoint {
+
+  url = "http://loki:3100/loki/api/v1/push"
+
+ }
+
+}
+
+
+
+otelcol.exporter.otlp "tempo" {
+
+ client {
+
+  endpoint = "tempo:4317"
+
+  tls {
+   insecure = true
+  }
+
+ }
+
+}
