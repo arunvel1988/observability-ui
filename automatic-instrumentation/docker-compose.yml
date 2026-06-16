@@ -1,6 +1,5 @@
 services:
 
-
   ecommerce:
 
     build: ./app
@@ -15,7 +14,7 @@ services:
 
   otel-collector:
 
-    image: otel/opentelemetry-collector:latest
+    image: otel/opentelemetry-collector-contrib:latest
 
     command:
       - "--config=/etc/otel.yml"
@@ -25,6 +24,8 @@ services:
 
     ports:
       - "4317:4317"
+      - "4318:4318"
+      - "8889:8889"
 
 
 
@@ -59,10 +60,8 @@ services:
     ports:
       - "3000:3000"
 
-    volumes:
-
-      - ./grafana/provisioning:/etc/grafana/provisioning
-
     environment:
-
       GF_SECURITY_ADMIN_PASSWORD: admin
+
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
