@@ -233,6 +233,8 @@ services:
     command:
 
       - "-config.file=/etc/tempo/tempo.yaml"
+      - "-target=all"
+
 
 
     volumes:
