@@ -23,8 +23,4 @@ ENV OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
 ENV OTEL_EXPORTER_OTLP_PROTOCOL=grpc
 
 
-CMD [
-"opentelemetry-instrument",
-"python",
-"app.py"
-]
+CMD ["opentelemetry-instrument", "python", "app.py"]
