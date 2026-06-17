@@ -1,0 +1,38 @@
+cat > generate_logs.sh <<'EOF'
+#!/bin/sh
+
+while true
+do
+  echo "$(date '+%Y-%m-%d %H:%M:%S') INFO User login successful user_id=$RANDOM" >> /var/log/app.log
+
+  echo "$(date '+%Y-%m-%d %H:%M:%S') INFO Product viewed product_id=$RANDOM" >> /var/log/app.log
+
+  echo "$(date '+%Y-%m-%d %H:%M:%S') DEBUG Loading product recommendations" >> /var/log/app.log
+
+  echo "$(date '+%Y-%m-%d %H:%M:%S') INFO Product added to cart product_id=$RANDOM" >> /var/log/app.log
+
+  echo "$(date '+%Y-%m-%d %H:%M:%S') DEBUG Cache lookup completed" >> /var/log/app.log
+
+  echo "$(date '+%Y-%m-%d %H:%M:%S') INFO Checkout started order_id=$RANDOM" >> /var/log/app.log
+
+  echo "$(date '+%Y-%m-%d %H:%M:%S') ERROR Payment gateway timeout order_id=$RANDOM" >> /var/log/app.log
+
+  echo "$(date '+%Y-%m-%d %H:%M:%S') INFO Retry payment initiated order_id=$RANDOM" >> /var/log/app.log
+
+  echo "$(date '+%Y-%m-%d %H:%M:%S') INFO Payment successful order_id=$RANDOM" >> /var/log/app.log
+
+  echo "$(date '+%Y-%m-%d %H:%M:%S') INFO Order completed order_id=$RANDOM" >> /var/log/app.log
+
+  sleep 2
+done
+EOF
+
+###################################################################
+
+chmod +x generate_logs.sh
+
+chmod +x generate_logs.sh
+
+
+
+
