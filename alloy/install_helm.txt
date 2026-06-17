@@ -24,7 +24,13 @@ logging {
 
 ###################################################################
 
+kubectl create configmap alloy-config \
+  -n alloy \
+  --from-file=config.alloy=./config.alloy \
+  --dry-run=client -o yaml | kubectl apply -f -
 
+kubectl rollout restart daemonsets alloy -n alloy
+###################################################################
 kubectl create configmap --namespace alloy alloy-config "--from-file=config.alloy=./config.alloy"
 
 kubectl delete cm alloy-config -n alloy
