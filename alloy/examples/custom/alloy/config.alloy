@@ -2,9 +2,7 @@ logging {
   level = "info"
 }
 
-########################################
-# METRICS PIPELINE
-########################################
+
 
 otelcol.receiver.otlp "app" {
   grpc {
@@ -32,9 +30,6 @@ otelcol.exporter.prometheusremotewrite "mimir" {
   }
 }
 
-########################################
-# LOGS PIPELINE (USES MODULE)
-########################################
 
 loki.source.file "app_logs" {
 
