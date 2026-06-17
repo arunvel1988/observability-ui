@@ -8,6 +8,8 @@ helm install --namespace alloy alloy grafana/alloy
 
 kubectl get pods --namespace alloy
 
+helm get values alloy -n alloy --all
+
 
 ##########################################################################
 
