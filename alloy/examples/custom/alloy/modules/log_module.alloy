@@ -1,0 +1,19 @@
+loki.process "log_module" {
+
+  # drop debug logs globally
+  stage.match {
+    selector = "{}"
+    regex    = "debug"
+    action   = "drop"
+  }
+
+  # enrich logs
+  stage.static_labels {
+    values = {
+      env = "dev"
+      team = "ecommerce"
+    }
+  }
+
+  forward_to = [loki.write.default.receiver]
+}
