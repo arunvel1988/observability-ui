@@ -42,9 +42,7 @@ loki.source.file "app_logs" {
   ]
 }
 
-########################################
-# LOAD MODULE
-########################################
+
 
 import.file "log_module" {
   filename = "/etc/alloy/modules/log_module.alloy"
