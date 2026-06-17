@@ -1,0 +1,60 @@
+
+
+livedebugging {
+  enabled = true
+}
+
+loki.source.kafka "kafka" {
+  brokers = ["kafka:9092"]
+  topics  = ["alloy-logs"]
+  labels   = {
+    source = "kafka",
+    component = "loki.source.kafka",
+
+  }
+  version = "3.8.0"
+  forward_to = [loki.process.log_data.receiver]
+
+}
+
+loki.process "log_data" {
+  forward_to = [loki.write.local.receiver]
+
+
+  stage.json {
+    drop_malformed = true
+    expressions = {
+      level = "",
+      msg   = "",
+      app   = "app",
+    }
+  }
+
+  stage.json {
+    source = "app"
+    expressions = {
+      app_name    = "name",
+      app_version = "version",
+    }
+  }
+
+  stage.template {
+    source   = "new_json"
+    template = "{\"level\":\"{{ .level }}\",\"msg\":\"{{ .msg }}\",\"app_name\":\"{{ .app_name }}\",\"app_version\":\"{{ .app_version }}\"}"
+
+  }
+
+  stage.output {
+    source = "new_json"
+  }
+ 
+
+  
+}
+
+loki.write "local" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+}
+
