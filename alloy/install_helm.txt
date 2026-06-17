@@ -10,6 +10,8 @@ kubectl get pods --namespace alloy
 
 helm get values alloy -n alloy --all
 
+helm get values alloy -n alloy --all > values.yaml
+
 
 ##########################################################################
 
