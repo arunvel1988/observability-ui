@@ -2,32 +2,6 @@ logging {
   level = "info"
 }
 
-otelcol.receiver.otlp "app" {
-  grpc {
-    endpoint = "0.0.0.0:4317"
-  }
-
-  output {
-    metrics = [
-      otelcol.processor.batch.default.input,
-    ]
-  }
-}
-
-otelcol.processor.batch "default" {
-  output {
-    metrics = [
-      prometheus.remote_write.mimir.receiver,
-    ]
-  }
-}
-
-prometheus.remote_write "mimir" {
-  endpoint {
-    url = "http://mimir:9009/api/v1/push"
-  }
-}
-
 loki.source.file "app_logs" {
   targets = [
     {
@@ -41,16 +15,11 @@ loki.source.file "app_logs" {
 }
 
 loki.process "log_module" {
-  stage.match {
-    selector = "{}"
-    regex    = "debug"
-    action   = "drop"
-  }
 
   stage.static_labels {
     values = {
-      env  = "dev",
-      team = "ecommerce",
+      custom_module = "working",
+      env           = "dev",
     }
   }
 
