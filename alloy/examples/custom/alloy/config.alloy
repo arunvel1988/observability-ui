@@ -17,12 +17,12 @@ otelcol.receiver.otlp "app" {
 otelcol.processor.batch "default" {
   output {
     metrics = [
-      otelcol.exporter.prometheusremotewrite.mimir.input,
+      prometheus.remote_write.mimir.receiver,
     ]
   }
 }
 
-otelcol.exporter.prometheusremotewrite "mimir" {
+prometheus.remote_write "mimir" {
   endpoint {
     url = "http://mimir:9009/api/v1/push"
   }
