@@ -1,0 +1,56 @@
+logging {
+  level = "info"
+}
+
+########################################
+# METRICS PIPELINE
+########################################
+
+otelcol.receiver.otlp "app" {
+  grpc {
+    endpoint = "0.0.0.0:4317"
+  }
+
+  output {
+    metrics = [
+      otelcol.processor.batch.default.input
+    ]
+  }
+}
+
+otelcol.processor.batch "default" {
+  output {
+    metrics = [
+      otelcol.exporter.prometheusremotewrite.mimir.input
+    ]
+  }
+}
+
+otelcol.exporter.prometheusremotewrite "mimir" {
+  endpoint {
+    url = "http://mimir:9009/api/v1/push"
+  }
+}
+
+########################################
+# LOGS PIPELINE (USES MODULE)
+########################################
+
+loki.source.file "app_logs" {
+
+  targets = [
+    { __path__ = "/var/log/app.log" }
+  ]
+
+  forward_to = [
+    loki.process.log_module.receiver
+  ]
+}
+
+########################################
+# LOAD MODULE
+########################################
+
+import.file "log_module" {
+  filename = "/etc/alloy/modules/log_module.alloy"
+}
