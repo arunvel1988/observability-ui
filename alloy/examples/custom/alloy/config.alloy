@@ -2,8 +2,6 @@ logging {
   level = "info"
 }
 
-
-
 otelcol.receiver.otlp "app" {
   grpc {
     endpoint = "0.0.0.0:4317"
@@ -11,7 +9,7 @@ otelcol.receiver.otlp "app" {
 
   output {
     metrics = [
-      otelcol.processor.batch.default.input
+      otelcol.processor.batch.default.input,
     ]
   }
 }
@@ -19,7 +17,7 @@ otelcol.receiver.otlp "app" {
 otelcol.processor.batch "default" {
   output {
     metrics = [
-      otelcol.exporter.prometheusremotewrite.mimir.input
+      otelcol.exporter.prometheusremotewrite.mimir.input,
     ]
   }
 }
@@ -30,20 +28,39 @@ otelcol.exporter.prometheusremotewrite "mimir" {
   }
 }
 
-
 loki.source.file "app_logs" {
-
   targets = [
-    { __path__ = "/var/log/app.log" }
+    {
+      __path__ = "/var/log/app.log",
+    },
   ]
 
   forward_to = [
-    loki.process.log_module.receiver
+    loki.process.log_module.receiver,
   ]
 }
 
+loki.process "log_module" {
+  stage.match {
+    selector = "{}"
+    regex    = "debug"
+    action   = "drop"
+  }
 
+  stage.static_labels {
+    values = {
+      env  = "dev",
+      team = "ecommerce",
+    }
+  }
 
-import.file "log_module" {
-  filename = "/etc/alloy/modules/log_module.alloy"
+  forward_to = [
+    loki.write.default.receiver,
+  ]
+}
+
+loki.write "default" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
 }
