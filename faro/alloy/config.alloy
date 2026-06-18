@@ -7,33 +7,36 @@ logging {
 faro.receiver "frontend" {
 
 
-    server {
+  server {
 
-        listen_address = "0.0.0.0"
+    listen_address = "0.0.0.0"
 
-        listen_port = 12347
-
-
-        cors_allowed_origins = [
-
-            "*",
-
-        ]
-
-    }
+    listen_port = 12347
 
 
-    output {
+    cors_allowed_origins = [
 
-        logs = [
+      "*",
 
-            loki.process.faro.receiver,
+    ]
 
-        ]
+  }
 
-    }
+
+
+  output {
+
+    logs = [
+
+      loki.process.faro.receiver,
+
+    ]
+
+  }
+
 
 }
+
 
 
 
@@ -42,26 +45,37 @@ faro.receiver "frontend" {
 loki.process "faro" {
 
 
-    stage.static_labels {
 
-        values = {
+  stage.static_labels {
 
-            job = "faro"
 
-            app = "ecommerce"
+    values = {
 
-        }
+
+      job = "faro",
+
+
+      app = "ecommerce",
+
 
     }
 
 
-    forward_to = [
+  }
 
-        loki.write.default.receiver,
 
-    ]
+
+
+  forward_to = [
+
+    loki.write.default.receiver,
+
+  ]
+
 
 }
+
+
 
 
 
@@ -70,12 +84,13 @@ loki.process "faro" {
 loki.write "default" {
 
 
-    endpoint {
+  endpoint {
 
 
-        url = "http://loki:3100/loki/api/v1/push"
+    url = "http://loki:3100/loki/api/v1/push"
 
 
-    }
+  }
+
 
 }
