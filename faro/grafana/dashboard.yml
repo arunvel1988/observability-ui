@@ -1,0 +1,18 @@
+apiVersion: 1
+
+
+providers:
+
+
+- name: Faro
+
+  folder: Faro
+
+
+  type: file
+
+
+  options:
+
+
+    path: /var/lib/grafana/dashboards
