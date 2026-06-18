@@ -1,139 +1,103 @@
 <!DOCTYPE html>
-
 <html>
 
 <head>
 
-<title>Faro Ecommerce</title>
+<title>Faro Test</title>
 
-
-<script src="https://unpkg.com/@grafana/faro-web-sdk@1.12.0/dist/bundle/faro-web-sdk.iife.js"></script>
-
-<script src="https://unpkg.com/@grafana/faro-web-tracing@1.12.0/dist/bundle/faro-web-tracing.iife.js"></script>
+<script src="https://unpkg.com/@grafana/faro-web-sdk@1.15.0/dist/bundle/faro-web-sdk.iife.js"></script>
 
 
 <script>
 
 
-window.addEventListener("load", function(){
+window.onload = () => {
 
 
-console.log("Starting Faro");
+    console.log(window.GrafanaFaroWebSdk);
 
 
-window.faro = window.GrafanaFaroWebSdk.initializeFaro({
+    const faro = window.GrafanaFaroWebSdk.faro;
 
 
-    url: "http://localhost:12347/collect",
+    window.GrafanaFaroWebSdk.initializeFaro({
 
 
-    app: {
-
-        name: "ecommerce",
-
-        version: "1.0"
-
-    },
+        url: "http://localhost:12347/collect",
 
 
-    instrumentations: [
+        app: {
 
-        ...window.GrafanaFaroWebSdk.getWebInstrumentations(),
+            name: "ecommerce",
 
-        new window.GrafanaFaroWebTracing.TracingInstrumentation()
+            version: "1"
 
-    ]
+        }
 
-
-});
+    });
 
 
 
-window.faro.api.pushLog(
+    faro.api.pushLog(
 
-    ["FRONTEND PAGE LOADED FROM BROWSER"],
+        ["BROWSER FARO STARTED"],
 
-    {
-        level:"info"
+        {
+
+            level:"info"
+
+        }
+
+    );
+
+
+};
+
+
+
+
+function cart(){
+
+
+    window.GrafanaFaroWebSdk.faro.api.pushLog(
+
+        ["CUSTOMER CLICKED CART FROM HTML"],
+
+        {
+
+            level:"info"
+
+        }
+
+    );
+
+
+}
+
+
+
+
+function fail(){
+
+
+    try {
+
+
+        let x = null;
+
+
+        x.test;
+
+
     }
 
-);
+    catch(e){
 
 
-console.log("Faro Started");
+        window.GrafanaFaroWebSdk.faro.api.pushError(e);
 
 
-});
-
-
-
-
-
-
-
-function addCart(){
-
-
-console.log("Add cart clicked");
-
-
-window.faro.api.pushLog(
-
-[
-"USER CLICKED ADD CART BUTTON"
-],
-
-{
-level:"info"
-}
-
-);
-
-
-}
-
-
-
-
-
-function checkout(){
-
-
-try {
-
-
-let payment=null;
-
-
-payment.id;
-
-
-
-}
-
-catch(e){
-
-
-window.faro.api.pushError(e);
-
-
-}
-
-
-}
-
-
-
-
-
-function loginFail(){
-
-
-window.faro.api.pushError(
-
-new Error("LOGIN FAILED FROM FRONTEND")
-
-);
+    }
 
 
 }
@@ -141,35 +105,26 @@ new Error("LOGIN FAILED FROM FRONTEND")
 
 </script>
 
-
 </head>
+
 
 
 <body>
 
 
-<h1>
-Faro Ecommerce Test
-</h1>
+<h1>Faro Browser Demo</h1>
 
 
-<button onclick="addCart()">
+<button onclick="cart()">
 
-Add Cart
+Cart
 
 </button>
 
 
-<button onclick="checkout()">
+<button onclick="fail()">
 
-Checkout Error
-
-</button>
-
-
-<button onclick="loginFail()">
-
-Login Error
+Generate Error
 
 </button>
 
