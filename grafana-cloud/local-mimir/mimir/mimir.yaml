@@ -35,7 +35,6 @@ distributor:
     kvstore:
       store: inmemory
 
-
+multitenancy_enabled: false
 limits:
-
   max_global_series_per_user: 100000
