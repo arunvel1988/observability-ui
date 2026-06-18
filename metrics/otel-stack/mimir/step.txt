@@ -1,0 +1,7 @@
+git clone https://github.com/grafana/mimir.git
+cd mimir
+
+cd docs/sources/mimir/get-started/play-with-grafana-mimir/
+
+docker-compose up -d
+
