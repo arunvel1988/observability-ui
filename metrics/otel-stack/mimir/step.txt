@@ -5,3 +5,21 @@ cd docs/sources/mimir/get-started/play-with-grafana-mimir/
 
 docker-compose up -d
 
+####################################################
+
+sum(up)
+
+
+count(up == 0) 
+
+docker-compose kill mimir-3
+
+##########################################################
+
+docker-compose start mimir-3
+
+##########################################################
+
+
+
+
