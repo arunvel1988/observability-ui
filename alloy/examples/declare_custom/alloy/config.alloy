@@ -1,0 +1,84 @@
+declare "python_service" {
+
+
+
+    argument "service_name" {
+        optional = false
+    }
+
+
+
+    argument "address" {
+        optional = false
+    }
+
+
+
+
+    prometheus.scrape "metrics" {
+
+
+        targets = [
+            {
+                "__address__" = argument.address.value,
+
+                "service" = argument.service_name.value,
+            },
+        ]
+
+
+
+        scrape_interval = "5s"
+
+
+
+        forward_to = [
+
+            prometheus.remote_write.prometheus.receiver,
+
+        ]
+
+    }
+
+}
+
+
+
+//
+// Using our custom component
+//
+
+
+python_service "orders" {
+
+
+    service_name = "order-service"
+
+    address = "order-service:5000"
+
+}
+
+
+
+python_service "payments" {
+
+
+    service_name = "payment-service"
+
+    address = "payment-service:5000"
+
+}
+
+
+
+
+prometheus.remote_write "prometheus" {
+
+
+    endpoint {
+
+        url = "http://prometheus:9090/api/v1/write"
+
+    }
+
+}
