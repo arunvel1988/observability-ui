@@ -1,0 +1,96 @@
+version: "3.9"
+
+
+services:
+
+
+  order-service:
+
+    image: python:3.11
+
+    working_dir: /app
+
+    volumes:
+      - ./order-service:/app
+
+    command:
+      sh -c "
+      pip install -r requirements.txt &&
+      python app.py
+      "
+
+    ports:
+      - "5001:5000"
+
+
+
+
+  payment-service:
+
+    image: python:3.11
+
+    working_dir: /app
+
+    volumes:
+      - ./payment-service:/app
+
+    command:
+      sh -c "
+      pip install -r requirements.txt &&
+      python app.py
+      "
+
+    ports:
+      - "5002:5000"
+
+
+
+
+
+  alloy:
+
+    image: grafana/alloy:latest
+
+    volumes:
+
+      - ./alloy/config.alloy:/etc/alloy/config.alloy
+
+
+    command:
+
+      - run
+
+      - /etc/alloy/config.alloy
+
+
+    depends_on:
+
+      - order-service
+
+      - payment-service
+
+
+
+
+
+  prometheus:
+
+
+    image: prom/prometheus
+
+
+    command:
+
+      - "--config.file=/etc/prometheus/prometheus.yml"
+
+      - "--web.enable-remote-write-receiver"
+
+
+    volumes:
+
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+
+
+    ports:
+
+      - "9090:9090"
