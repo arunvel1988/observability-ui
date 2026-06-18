@@ -1,1 +1,17 @@
 
+prometheus.scrape "orders" {
+
+ targets = [
+  {"__address__"="order-service:5000"}
+ ]
+
+}
+
+
+prometheus.scrape "payments" {
+
+ targets = [
+  {"__address__"="payment-service:5000"}
+ ]
+
+}
