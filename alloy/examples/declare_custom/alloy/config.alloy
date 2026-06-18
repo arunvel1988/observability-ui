@@ -1,82 +1,167 @@
+//
+// Custom reusable Alloy component
+//
+
+
 declare "python_service" {
 
 
+
     argument "service_name" {
+
         optional = false
+
     }
+
 
 
     argument "address" {
+
         optional = false
+
     }
+
 
 
     argument "output" {
+
         optional = false
+
     }
+
+
 
 
 
     prometheus.scrape "metrics" {
 
 
+
         targets = [
+
             {
+
                 "__address__" = argument.address.value,
+
                 "service"     = argument.service_name.value,
+
             },
+
         ]
+
 
 
         scrape_interval = "5s"
 
+        scrape_timeout = "3s"
+
+
 
         forward_to = argument.output.value
 
+
+
     }
+
+
 
 }
 
 
+
+
+
+
+
+//
+// Storage destination
+//
 
 
 prometheus.remote_write "prometheus" {
 
+
+
     endpoint {
+
+
 
         url = "http://prometheus:9090/api/v1/write"
 
+
+
     }
+
+
 
 }
 
 
 
+
+
+
+
+
+
+//
+// Use custom component for Order Service
+//
 
 
 python_service "orders" {
 
+
+
     service_name = "order-service"
+
+
 
     address = "order-service:5000"
 
+
+
     output = [
+
         prometheus.remote_write.prometheus.receiver,
+
     ]
+
+
 
 }
 
 
 
+
+
+
+
+
+
+//
+// Use same custom component for Payment Service
+//
+
+
 python_service "payments" {
 
+
+
     service_name = "payment-service"
+
+
 
     address = "payment-service:5000"
 
 
+
     output = [
+
         prometheus.remote_write.prometheus.receiver,
+
     ]
+
+
 
 }
