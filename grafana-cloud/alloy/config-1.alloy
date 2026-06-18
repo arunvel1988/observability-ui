@@ -1,0 +1,73 @@
+prometheus.scrape "python_app" {
+
+
+    targets = [
+        {
+            "__address__" = "app:8000",
+        },
+    ]
+
+
+    forward_to = [
+        prometheus.relabel.reduce_cardinality.receiver,
+    ]
+
+}
+
+
+
+prometheus.relabel "reduce_cardinality" {
+
+
+    rule {
+
+
+        action = "labeldrop"
+
+
+        regex = "user_id|session_id"
+
+
+    }
+
+
+
+    forward_to = [
+
+        prometheus.remote_write.metrics_hosted_prometheus.receiver,
+
+    ]
+
+}
+
+
+
+
+prometheus.remote_write "metrics_hosted_prometheus" {
+
+
+   endpoint {
+
+
+      name = "hosted-prometheus"
+
+
+      url  = "https://prometheus-prod-43-prod-ap-south-1.grafana.net/api/prom/push"
+
+
+      basic_auth {
+
+
+        username = "3316364"
+
+
+        password = "YOUR_NEW_TOKEN"
+
+
+      }
+
+
+   }
+
+
+}
