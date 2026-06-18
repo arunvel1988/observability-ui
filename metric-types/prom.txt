@@ -1,0 +1,83 @@
+###############################################################
+###### Return all metrics for node_memory_MemTotal_bytes
+node_memory_MemTotal_bytes
+
+#######################################################################
+
+# Filter by instance
+node_memory_MemTotal_bytes{instance="localhost:9100"}
+
+# Use regular expressions for label matching
+node_memory_MemTotal_bytes{instance=~"local.*"}
+
+# Division - Calculate memory used as fraction of total
+(node_memory_MemTotal_bytes{instance="localhost:9100"} - node_memory_MemAvailable_bytes{instance="localhost:9100"}) / node_memory_MemTotal_bytes{instance="localhost:9100"}
+
+
+
+# Multiplication - Convert to percentage
+100 * ((node_memory_MemTotal_bytes{instance="localhost:9100"} - node_memory_MemAvailable_bytes{instance="localhost:9100"}) / node_memory_MemTotal_bytes{instance="localhost:9100"})
+
+
+
+# Get data for the last 5 minutes
+node_cpu_seconds_total{instance="localhost:9100"}[5m]
+
+# Get the sum of all CPU cores for system mode
+sum(node_cpu_seconds_total{instance="localhost:9100",mode="system"})
+
+# Get the average
+avg(node_cpu_seconds_total{instance="localhost:9100",mode="system"})
+
+node_cpu_seconds_total
+
+node_cpu_seconds_total{instance="localhost:9100"}
+
+node_cpu_seconds_total{instance="localhost:9100", mode="user"}
+
+node_cpu_seconds_total{instance="localhost:9100"}
+
+rate(node_cpu_seconds_total{instance="localhost:9100"}[5m])
+
+The rate() function calculates the per-second increase of the counter over the specified time window (5 minutes). The result shows the fraction of each CPU core spent in each mode per second (a value between 0 and 1). This essentially converts the ever-increasing counter into a percentage of CPU usage.
+
+##############################################################################
+
+
+sum by (mode) (rate(node_cpu_seconds_total{instance="localhost:9100"}[5m]))
+
+his query aggregates CPU usage across all cores but keeps the different modes separate. The result shows total CPU seconds used per second across all cores for each mode. Values greater than 1.0 indicate usage across multiple cores (e.g., 3.2 means usage equivalent to 3.2 cores).
+
+##############################################################################
+
+node_memory_MemTotal_bytes{instance="localhost:9100"}
+
+node_memory_MemAvailable_bytes{instance="localhost:9100"}
+
+100 * (1 - (node_memory_MemAvailable_bytes{instance="localhost:9100"} / node_memory_MemTotal_bytes{instance="localhost:9100"}))
+
+node_filesystem_size_bytes{instance="localhost:9100",fstype!="tmpfs",mountpoint!="/run"}
+node_filesystem_free_bytes{instance="localhost:9100",fstype!="tmpfs",mountpoint!="/run"}
+
+100 * (1 - (node_filesystem_free_bytes{instance="localhost:9100",mountpoint="/"} / node_filesystem_size_bytes{instance="localhost:9100",mountpoint="/"}))
+
+#################################################################
+
+
+rate(node_network_receive_bytes_total{instance="localhost:9100",device!="lo"}[5m])
+
+rate(node_network_transmit_bytes_total{instance="localhost:9100",device!="lo"}[5m])
+
+node_load1{instance="localhost:9100"}
+
+node_load5{instance="localhost:9100"}
+
+node_load15{instance="localhost:9100"}
+
+#################################################################
+sum by (instance) (rate(node_network_receive_bytes_total{instance="localhost:9100",device!="lo"}[5m]))
+
+sum by (instance) (rate(node_network_transmit_bytes_total{instance="localhost:9100",device!="lo"}[5m]))
+
+
+#################################################################
