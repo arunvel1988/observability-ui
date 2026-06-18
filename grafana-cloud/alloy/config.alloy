@@ -36,7 +36,7 @@ prometheus.remote_write "metrics_hosted_prometheus" {
  username = "3316364"
 
 
- password = "YOUR_NEW_GRAFANA_TOKEN"
+ password = "glc_eyJvIjoiMTgxNjkyMCIsIm4iOiJzdGFjay0xNjk2MDcwLWFsbG95LWRlbW8iLCJrIjoiODMxMW94VUwycTJ3akw1MmVSWThaYTNSIiwibSI6eyJyIjoicHJvZC1hcC1zb3V0aC0xIn19"
 
 
  }
