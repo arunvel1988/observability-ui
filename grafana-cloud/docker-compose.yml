@@ -1,0 +1,45 @@
+version: "3.9"
+
+
+services:
+
+
+  app:
+
+    build:
+      context: ./app
+
+
+    container_name: high-cardinality-app
+
+
+    ports:
+
+      - "8000:8000"
+
+
+
+  alloy:
+
+
+    image: grafana/alloy:latest
+
+
+    container_name: alloy
+
+
+    volumes:
+
+      - ./alloy/config.alloy:/etc/alloy/config.alloy
+
+
+    command:
+
+      - run
+
+      - /etc/alloy/config.alloy
+
+
+    depends_on:
+
+      - app
