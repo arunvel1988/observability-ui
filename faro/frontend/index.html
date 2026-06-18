@@ -1,11 +1,28 @@
 <!DOCTYPE html>
+
 <html>
 
 <head>
 
-<title>
-Faro Ecommerce Demo
-</title>
+<title>Faro Ecommerce Working Demo</title>
+
+<style>
+
+body {
+    background:#111827;
+    color:white;
+    font-family:Arial;
+    padding:40px;
+}
+
+button {
+    padding:15px;
+    margin:10px;
+    font-size:20px;
+}
+
+</style>
+
 
 </head>
 
@@ -14,8 +31,18 @@ Faro Ecommerce Demo
 
 
 <h1>
-Ecommerce Faro Test
+Ecommerce Frontend Observability
 </h1>
+
+
+<h3>
+Grafana Faro -> Alloy -> Loki
+</h3>
+
+
+<button onclick="pageView()">
+Page View
+</button>
 
 
 <button onclick="addCart()">
@@ -23,61 +50,108 @@ Add Cart
 </button>
 
 
-<button onclick="paymentError()">
-Payment Error
+<button onclick="checkoutError()">
+Checkout Error
 </button>
 
 
-<h2 id="msg"></h2>
+<h2 id="result"></h2>
 
 
 
-
-
-<script src="https://unpkg.com/@grafana/faro-web-sdk@1.15.0/dist/bundle/faro-web-sdk.iife.js"></script>
 
 
 <script>
 
 
-console.log("Loading Faro");
-
-
-const faro = window.GrafanaFaroWebSdk.initializeFaro({
-
-
-    url: "http://localhost:12347/collect",
-
-
-    app: {
-
-        name: "ecommerce",
-
-        version: "1.0"
-
-    }
-
-});
+const FARO_URL = "http://localhost:12347/collect";
 
 
 
-console.log("Faro object", faro);
+
+function sendFaroLog(message, level){
+
+
+    fetch(
+        FARO_URL,
+        {
+
+        method:"POST",
+
+
+        headers:{
+
+            "Content-Type":"application/json"
+
+        },
+
+
+        body: JSON.stringify({
+
+            meta: {
+
+                app: {
+
+                    name:"ecommerce",
+
+                    version:"1"
+
+                },
+
+                sdk: {
+
+                    name:"faro-web-sdk",
+
+                    version:"1"
+
+                }
+
+            },
+
+
+            logs:[
+
+                {
+
+                message:message,
+
+                level:level,
+
+                timestamp:new Date().toISOString()
+
+                }
+
+            ]
+
+
+        })
+
+
+        }
+
+    );
+
+
+}
 
 
 
-// SEND TEST LOG IMMEDIATELY
 
-faro.api.pushLog(
 
-    ["BROWSER STARTED FARO SUCCESSFULLY"],
 
-    {
+function pageView(){
 
-        level: "info"
 
-    }
+    sendFaroLog(
 
-);
+        "USER OPENED HOME PAGE",
+
+        "info"
+
+    );
+
+
+}
 
 
 
@@ -88,24 +162,16 @@ faro.api.pushLog(
 function addCart(){
 
 
-    console.log("cart clicked");
+    sendFaroLog(
 
+        "CUSTOMER ADDED PRODUCT TO CART",
 
-    faro.api.pushLog(
-
-        ["USER CLICKED ADD CART"],
-
-        {
-
-            level:"info"
-
-        }
+        "info"
 
     );
 
 
-
-    document.getElementById("msg").innerHTML=
+    document.getElementById("result").innerHTML=
 
     "Cart Added";
 
@@ -118,43 +184,47 @@ function addCart(){
 
 
 
-function paymentError(){
+function checkoutError(){
 
 
 
-    try {
+    sendFaroLog(
+
+        "PAYMENT FAILED JAVASCRIPT ERROR",
+
+        "error"
+
+    );
 
 
-        let payment = undefined;
+    document.getElementById("result").innerHTML=
 
-
-        payment.id;
-
-
-
-    } catch(err){
-
-
-
-        console.log("sending error",err);
-
-
-
-        faro.api.pushError(err);
-
-
-
-    }
-
+    "Payment Failed";
 
 
 }
 
 
+
+
+
+// automatic page load event
+
+
+sendFaroLog(
+
+    "ECOMMERCE APPLICATION LOADED",
+
+    "info"
+
+);
+
+
+
 </script>
 
 
-</body>
 
+</body>
 
 </html>
