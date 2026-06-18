@@ -1,1 +1,24 @@
+#####################################################################################
+curl -X POST http://localhost:12347/collect \
+-H "Content-Type: application/json" \
+-d '
+{
+ "meta":{
+   "app":{
+    "name":"ecommerce",
+    "version":"1"
+   }
+ },
+ "logs":[
+  {
+   "message":"ORDER CREATED FROM FARO",
+   "level":"info"
+  }
+ ]
+}'
 
+#####################################################################################
+
+curl -G http://localhost:3100/loki/api/v1/query_range \
+--data-urlencode 'query={job="faro"}' \
+--data-urlencode 'limit=20'
