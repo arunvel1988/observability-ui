@@ -1,56 +1,69 @@
 <!DOCTYPE html>
+
 <html>
 
 <head>
 
-<title>Faro Ecommerce Demo</title>
+<title>Faro Ecommerce</title>
 
 
-<script src="https://unpkg.com/@grafana/faro-web-sdk@latest/dist/bundle/faro-web-sdk.iife.js"></script>
+<script src="https://unpkg.com/@grafana/faro-web-sdk@1.12.0/dist/bundle/faro-web-sdk.iife.js"></script>
+
+<script src="https://unpkg.com/@grafana/faro-web-tracing@1.12.0/dist/bundle/faro-web-tracing.iife.js"></script>
 
 
 <script>
 
 
-let faro;
+window.addEventListener("load", function(){
 
 
-window.onload = function(){
+console.log("Starting Faro");
 
 
-    faro = window.GrafanaFaroWebSdk.initializeFaro({
+window.faro = window.GrafanaFaroWebSdk.initializeFaro({
 
 
-        url: "http://localhost:12347/collect",
+    url: "http://localhost:12347/collect",
 
 
-        app: {
+    app: {
 
-            name: "ecommerce",
+        name: "ecommerce",
 
-            version: "1"
+        version: "1.0"
 
-        }
-
-
-    });
+    },
 
 
+    instrumentations: [
 
-    faro.api.pushLog(
+        ...window.GrafanaFaroWebSdk.getWebInstrumentations(),
 
-        ["ECOMMERCE PAGE LOADED"],
+        new window.GrafanaFaroWebTracing.TracingInstrumentation()
 
-        {
-
-            level:"info"
-
-        }
-
-    );
+    ]
 
 
-};
+});
+
+
+
+window.faro.api.pushLog(
+
+    ["FRONTEND PAGE LOADED FROM BROWSER"],
+
+    {
+        level:"info"
+    }
+
+);
+
+
+console.log("Faro Started");
+
+
+});
 
 
 
@@ -61,34 +74,23 @@ window.onload = function(){
 function addCart(){
 
 
-
-    faro.api.pushLog(
-
-        [
-
-        "CUSTOMER ADDED FOOTBALL JERSEY TO CART"
-
-        ],
-
-        {
-
-        level:"info"
-
-        }
-
-    );
+console.log("Add cart clicked");
 
 
+window.faro.api.pushLog(
 
-    document.getElementById("result").innerHTML=
+[
+"USER CLICKED ADD CART BUTTON"
+],
 
-    "Cart Added";
+{
+level:"info"
+}
+
+);
 
 
 }
-
-
-
 
 
 
@@ -97,68 +99,28 @@ function addCart(){
 function checkout(){
 
 
-    try{
+try {
 
 
-        let payment = null;
+let payment=null;
 
 
-        payment.transaction.id;
-
-
-    }
-
-
-    catch(error){
-
-
-        faro.api.pushError(error);
-
-
-        document.getElementById("result").innerHTML=
-
-        "Payment Error";
-
-
-    }
-
-
-}
-
-
-
-
-
-
-
-
-
-function slowApi(){
-
-
-
-    faro.api.pushLog(
-
-      [
-
-      "PAYMENT API SLOW RESPONSE 5 SECOND"
-
-      ],
-
-      {
-
-      level:"warn"
-
-      }
-
-    );
+payment.id;
 
 
 
 }
 
+catch(e){
 
 
+window.faro.api.pushError(e);
+
+
+}
+
+
+}
 
 
 
@@ -167,69 +129,27 @@ function slowApi(){
 function loginFail(){
 
 
-    let err = new Error(
+window.faro.api.pushError(
 
-        "LOGIN TOKEN EXPIRED"
+new Error("LOGIN FAILED FROM FRONTEND")
 
-    );
-
-
-    faro.api.pushError(err);
-
+);
 
 
 }
-
 
 
 </script>
 
 
-<style>
-
-
-body {
-
-background:#111827;
-
-color:white;
-
-font-family:Arial;
-
-padding:40px;
-
-}
-
-
-
-button {
-
-padding:15px;
-
-font-size:20px;
-
-margin:10px;
-
-display:block;
-
-}
-
-
-
-</style>
-
-
 </head>
-
 
 
 <body>
 
 
 <h1>
-
-Ecommerce Faro Real User Monitoring
-
+Faro Ecommerce Test
 </h1>
 
 
@@ -240,31 +160,18 @@ Add Cart
 </button>
 
 
-
 <button onclick="checkout()">
 
-Checkout Failure
+Checkout Error
 
 </button>
-
-
-
-<button onclick="slowApi()">
-
-Slow Payment API
-
-</button>
-
 
 
 <button onclick="loginFail()">
 
-Login Failure
+Login Error
 
 </button>
-
-
-<h2 id="result"></h2>
 
 
 </body>
