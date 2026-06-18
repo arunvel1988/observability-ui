@@ -1,22 +1,17 @@
-//
-// Grafana Faro Receiver
-// Browser ---> Alloy
-//
+logging {
+  level = "debug"
+}
+
 
 
 faro.receiver "frontend" {
 
 
-
     server {
-
-
 
         listen_address = "0.0.0.0"
 
-
         listen_port = 12347
-
 
 
         cors_allowed_origins = [
@@ -25,32 +20,18 @@ faro.receiver "frontend" {
 
         ]
 
-
-
     }
-
-
-
-
 
 
     output {
 
-
-
         logs = [
 
-
-            loki.process.faro_logs.receiver,
-
+            loki.process.faro.receiver,
 
         ]
 
-
-
     }
-
-
 
 }
 
@@ -58,84 +39,43 @@ faro.receiver "frontend" {
 
 
 
-
-
-
-
-//
-// Process Faro Logs
-// Add labels before sending Loki
-//
-
-
-loki.process "faro_logs" {
-
-
+loki.process "faro" {
 
 
     stage.static_labels {
 
-
         values = {
 
+            job = "faro"
 
-            app = "ecommerce-ui"
-
-
-            source = "grafana-faro"
-
+            app = "ecommerce"
 
         }
-
 
     }
 
 
-
-
-
-
-
     forward_to = [
-
 
         loki.write.default.receiver,
 
-
     ]
-
-
 
 }
 
 
 
-
-
-
-
-
-
-
-//
-// Send logs to Loki
-//
 
 
 loki.write "default" {
 
 
-
     endpoint {
-
 
 
         url = "http://loki:3100/loki/api/v1/push"
 
 
-
     }
-
-
 
 }
