@@ -3,7 +3,36 @@
 
 <head>
 
-<title>Faro Test</title>
+<title>
+Faro Ecommerce Demo
+</title>
+
+</head>
+
+
+<body>
+
+
+<h1>
+Ecommerce Faro Test
+</h1>
+
+
+<button onclick="addCart()">
+Add Cart
+</button>
+
+
+<button onclick="paymentError()">
+Payment Error
+</button>
+
+
+<h2 id="msg"></h2>
+
+
+
+
 
 <script src="https://unpkg.com/@grafana/faro-web-sdk@1.15.0/dist/bundle/faro-web-sdk.iife.js"></script>
 
@@ -11,36 +40,60 @@
 <script>
 
 
-window.onload = () => {
+console.log("Loading Faro");
 
 
-    console.log(window.GrafanaFaroWebSdk);
+const faro = window.GrafanaFaroWebSdk.initializeFaro({
 
 
-    const faro = window.GrafanaFaroWebSdk.faro;
+    url: "http://localhost:12347/collect",
 
 
-    window.GrafanaFaroWebSdk.initializeFaro({
+    app: {
+
+        name: "ecommerce",
+
+        version: "1.0"
+
+    }
+
+});
 
 
-        url: "http://localhost:12347/collect",
+
+console.log("Faro object", faro);
 
 
-        app: {
 
-            name: "ecommerce",
+// SEND TEST LOG IMMEDIATELY
 
-            version: "1"
+faro.api.pushLog(
 
-        }
+    ["BROWSER STARTED FARO SUCCESSFULLY"],
 
-    });
+    {
 
+        level: "info"
+
+    }
+
+);
+
+
+
+
+
+
+
+function addCart(){
+
+
+    console.log("cart clicked");
 
 
     faro.api.pushLog(
 
-        ["BROWSER FARO STARTED"],
+        ["USER CLICKED ADD CART"],
 
         {
 
@@ -51,25 +104,10 @@ window.onload = () => {
     );
 
 
-};
 
+    document.getElementById("msg").innerHTML=
 
-
-
-function cart(){
-
-
-    window.GrafanaFaroWebSdk.faro.api.pushLog(
-
-        ["CUSTOMER CLICKED CART FROM HTML"],
-
-        {
-
-            level:"info"
-
-        }
-
-    );
+    "Cart Added";
 
 
 }
@@ -77,27 +115,37 @@ function cart(){
 
 
 
-function fail(){
+
+
+
+function paymentError(){
+
 
 
     try {
 
 
-        let x = null;
+        let payment = undefined;
 
 
-        x.test;
+        payment.id;
+
+
+
+    } catch(err){
+
+
+
+        console.log("sending error",err);
+
+
+
+        faro.api.pushError(err);
+
 
 
     }
 
-    catch(e){
-
-
-        window.GrafanaFaroWebSdk.faro.api.pushError(e);
-
-
-    }
 
 
 }
@@ -105,30 +153,8 @@ function fail(){
 
 </script>
 
-</head>
-
-
-
-<body>
-
-
-<h1>Faro Browser Demo</h1>
-
-
-<button onclick="cart()">
-
-Cart
-
-</button>
-
-
-<button onclick="fail()">
-
-Generate Error
-
-</button>
-
 
 </body>
+
 
 </html>
