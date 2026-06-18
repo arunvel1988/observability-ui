@@ -1,0 +1,75 @@
+services:
+
+
+ app:
+
+  build: ./app
+
+  container_name: app
+
+  ports:
+   - "8000:8000"
+
+
+
+ alloy:
+
+  image: grafana/alloy:latest
+
+  container_name: alloy
+
+  volumes:
+   - ./alloy/config.alloy:/etc/alloy/config.alloy
+
+  command:
+   - run
+   - /etc/alloy/config.alloy
+
+  depends_on:
+   - app
+
+
+
+ mimir:
+
+  image: grafana/mimir:latest
+
+  container_name: mimir
+
+
+  command:
+   - -config.file=/etc/mimir/mimir.yaml
+
+
+  volumes:
+   - ./mimir/mimir.yaml:/etc/mimir/mimir.yaml
+   - mimir-data:/data
+
+
+  ports:
+   - "9009:9009"
+
+
+
+ grafana:
+
+
+  image: grafana/grafana:latest
+
+
+  container_name: grafana
+
+
+  ports:
+   - "3000:3000"
+
+
+  volumes:
+
+   - ./grafana/datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml
+
+
+
+volumes:
+
+ mimir-data:
