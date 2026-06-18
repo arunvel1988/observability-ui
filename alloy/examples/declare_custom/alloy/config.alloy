@@ -1,17 +1,19 @@
 declare "python_service" {
 
 
-
     argument "service_name" {
         optional = false
     }
-
 
 
     argument "address" {
         optional = false
     }
 
+
+    argument "output" {
+        optional = false
+    }
 
 
 
@@ -21,51 +23,17 @@ declare "python_service" {
         targets = [
             {
                 "__address__" = argument.address.value,
-
-                "service" = argument.service_name.value,
+                "service"     = argument.service_name.value,
             },
         ]
-
 
 
         scrape_interval = "5s"
 
 
-
-        forward_to = [
-
-            prometheus.remote_write.prometheus.receiver,
-
-        ]
+        forward_to = argument.output.value
 
     }
-
-}
-
-
-
-//
-// Using our custom component
-//
-
-
-python_service "orders" {
-
-
-    service_name = "order-service"
-
-    address = "order-service:5000"
-
-}
-
-
-
-python_service "payments" {
-
-
-    service_name = "payment-service"
-
-    address = "payment-service:5000"
 
 }
 
@@ -74,11 +42,41 @@ python_service "payments" {
 
 prometheus.remote_write "prometheus" {
 
-
     endpoint {
 
         url = "http://prometheus:9090/api/v1/write"
 
     }
+
+}
+
+
+
+
+
+python_service "orders" {
+
+    service_name = "order-service"
+
+    address = "order-service:5000"
+
+    output = [
+        prometheus.remote_write.prometheus.receiver,
+    ]
+
+}
+
+
+
+python_service "payments" {
+
+    service_name = "payment-service"
+
+    address = "payment-service:5000"
+
+
+    output = [
+        prometheus.remote_write.prometheus.receiver,
+    ]
 
 }
