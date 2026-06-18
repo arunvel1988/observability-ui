@@ -1,0 +1,48 @@
+prometheus.scrape "python_app" {
+
+
+ targets = [
+
+   {
+    "__address__" = "app:8000",
+   },
+
+ ]
+
+
+ forward_to = [
+
+ prometheus.remote_write.metrics_hosted_prometheus.receiver,
+
+ ]
+
+}
+
+
+
+
+prometheus.remote_write "metrics_hosted_prometheus" {
+
+
+ endpoint {
+
+
+ url  = "https://prometheus-prod-43-prod-ap-south-1.grafana.net/api/prom/push"
+
+
+ basic_auth {
+
+
+ username = "3316364"
+
+
+ password = "YOUR_NEW_GRAFANA_TOKEN"
+
+
+ }
+
+
+ }
+
+
+}
