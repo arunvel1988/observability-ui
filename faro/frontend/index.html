@@ -1,114 +1,56 @@
 <!DOCTYPE html>
-
 <html>
-
 
 <head>
 
-
-<title>
-
-Ecommerce Faro Demo
-
-</title>
+<title>Faro Ecommerce Demo</title>
 
 
-
-<style>
-
-
-body{
-
-background:#111827;
-
-color:white;
-
-font-family:Arial;
-
-padding:50px;
-
-}
-
-
-
-.container{
-
-background:#1f2937;
-
-padding:30px;
-
-border-radius:15px;
-
-width:600px;
-
-}
-
-
-
-button{
-
-
-display:block;
-
-width:300px;
-
-padding:15px;
-
-margin:15px;
-
-font-size:18px;
-
-
-}
-
-
-
-</style>
-
-
-
-
-
-
-<script src="https://unpkg.com/@grafana/faro-web-sdk/dist/bundle/faro-web-sdk.iife.js">
-</script>
-
-
-
-
-
+<script src="https://unpkg.com/@grafana/faro-web-sdk@latest/dist/bundle/faro-web-sdk.iife.js"></script>
 
 
 <script>
 
 
-const faro =
-
-window.GrafanaFaroWebSdk.initializeFaro({
+let faro;
 
 
-
-url:
-
-"http://localhost:12347/collect",
+window.onload = function(){
 
 
-
-app:{
-
-
-name:"ecommerce-ui",
+    faro = window.GrafanaFaroWebSdk.initializeFaro({
 
 
-version:"1.0"
+        url: "http://localhost:12347/collect",
 
 
-}
+        app: {
+
+            name: "ecommerce",
+
+            version: "1"
+
+        }
+
+
+    });
 
 
 
-});
+    faro.api.pushLog(
 
+        ["ECOMMERCE PAGE LOADED"],
+
+        {
+
+            level:"info"
+
+        }
+
+    );
+
+
+};
 
 
 
@@ -120,17 +62,65 @@ function addCart(){
 
 
 
-faro.api.pushLog([
+    faro.api.pushLog(
 
-"Customer added product to cart"
+        [
 
-]);
+        "CUSTOMER ADDED FOOTBALL JERSEY TO CART"
+
+        ],
+
+        {
+
+        level:"info"
+
+        }
+
+    );
 
 
 
-document.getElementById("status").innerHTML=
+    document.getElementById("result").innerHTML=
 
-"Product Added";
+    "Cart Added";
+
+
+}
+
+
+
+
+
+
+
+
+function checkout(){
+
+
+    try{
+
+
+        let payment = null;
+
+
+        payment.transaction.id;
+
+
+    }
+
+
+    catch(error){
+
+
+        faro.api.pushError(error);
+
+
+        document.getElementById("result").innerHTML=
+
+        "Payment Error";
+
+
+    }
 
 
 }
@@ -143,48 +133,25 @@ document.getElementById("status").innerHTML=
 
 
 
-
-function checkoutFailure(){
-
-
-
-try{
-
-
-faro.api.pushLog([
-
-"Checkout started"
-
-]);
+function slowApi(){
 
 
 
-let payment=null;
+    faro.api.pushLog(
 
+      [
 
+      "PAYMENT API SLOW RESPONSE 5 SECOND"
 
-payment.id;
+      ],
 
+      {
 
+      level:"warn"
 
-}
+      }
 
-
-
-catch(error){
-
-
-
-faro.api.pushError(error);
-
-
-
-document.getElementById("status").innerHTML=
-
-"Payment Failed";
-
-
-}
+    );
 
 
 
@@ -197,186 +164,109 @@ document.getElementById("status").innerHTML=
 
 
 
-
-function slowPayment(){
-
+function loginFail(){
 
 
-faro.api.pushLog([
+    let err = new Error(
 
-"Slow payment request started"
+        "LOGIN TOKEN EXPIRED"
 
-]);
-
-
-
-setTimeout(()=>{
+    );
 
 
-faro.api.pushLog([
-
-"Payment gateway response took 5 seconds"
-
-]);
-
-
-
-document.getElementById("status").innerHTML=
-
-"Slow Payment Completed";
-
-
-
-},5000);
+    faro.api.pushError(err);
 
 
 
 }
-
-
-
-
-
-
-
-
-
-
-function loginError(){
-
-
-
-try{
-
-
-
-throw new Error(
-
-"Authentication token expired"
-
-);
-
-
-
-}
-
-
-catch(error){
-
-
-
-faro.api.pushError(error);
-
-
-
-document.getElementById("status").innerHTML=
-
-"Login Error";
-
-
-
-}
-
-
-
-}
-
-
-
-
 
 
 
 </script>
 
 
+<style>
+
+
+body {
+
+background:#111827;
+
+color:white;
+
+font-family:Arial;
+
+padding:40px;
+
+}
+
+
+
+button {
+
+padding:15px;
+
+font-size:20px;
+
+margin:10px;
+
+display:block;
+
+}
+
+
+
+</style>
+
+
 </head>
-
-
-
-
 
 
 
 <body>
 
 
-
 <h1>
 
-Ecommerce Application
+Ecommerce Faro Real User Monitoring
 
 </h1>
 
 
-
-<h3>
-
-Grafana Faro + Alloy + Loki
-
-</h3>
-
-
-
-
-<div class="container">
-
-
-
 <button onclick="addCart()">
 
-Add To Cart Success
+Add Cart
 
 </button>
 
 
 
+<button onclick="checkout()">
 
-<button onclick="checkoutFailure()">
-
-Checkout Payment Failure
-
-</button>
-
-
-
-
-
-<button onclick="slowPayment()">
-
-Slow Payment Gateway
+Checkout Failure
 
 </button>
 
 
 
+<button onclick="slowApi()">
+
+Slow Payment API
+
+</button>
 
 
-<button onclick="loginError()">
+
+<button onclick="loginFail()">
 
 Login Failure
 
 </button>
 
 
-
-
-
-<h2 id="status">
-
-Waiting...
-
-</h2>
-
-
-
-
-</div>
-
-
+<h2 id="result"></h2>
 
 
 </body>
-
 
 </html>
