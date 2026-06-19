@@ -34,11 +34,13 @@ blocks_storage:
 
 
 
+
 ingester:
 
   ring:
 
     replication_factor: 1
+
 
 
 
@@ -51,16 +53,6 @@ ruler:
 
 
   evaluation_interval: 10s
-
-
-  remote_write:
-
-    enabled: true
-
-
-    client:
-
-      url: http://localhost:9009/api/v1/push
 
 
 
@@ -77,9 +69,11 @@ ruler_storage:
 
 
 
+
 compactor:
 
   data_dir: /data/compactor
+
 
 
 
