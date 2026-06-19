@@ -1,9 +1,24 @@
+
 kubectl create namespace mimir-test
 helm repo add grafana https://grafana.github.io/helm-charts
 helm repo update
 helm -n mimir-test install mimir grafana/mimir-distributed
-
 kubectl -n mimir-test get pods
+helm pull grafana/mimir-distributed --untar
+kubectl create namespace monitoring
+helm install grafana grafana/grafana \
+-n monitoring
+kubectl get secret \
+-n monitoring grafana \
+-o jsonpath="{.data.admin-password}" \
+| base64 -d
+
+kubectl port-forward \
+-n monitoring svc/grafana \
+3000:80
+
+
+
 
 ################################################################################################################
 
