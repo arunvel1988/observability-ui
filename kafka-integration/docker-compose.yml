@@ -54,8 +54,10 @@ services:
 
   mimir:
     image: grafana/mimir:latest
+    container_name: mimir-0
+    hostname: mimir-0
 
-    container_name: mimir
+
 
     command:
       - -config.file=/etc/mimir/mimir.yaml
