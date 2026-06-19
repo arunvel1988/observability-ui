@@ -1,2 +1,9 @@
 
 docker logs mimir | grep kafka
+
+orders_total
+
+docker stop mimir
+
+docker start mimir
+
