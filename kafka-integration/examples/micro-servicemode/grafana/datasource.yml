@@ -1,0 +1,13 @@
+apiVersion: 1
+
+datasources:
+
+- name: Mimir
+
+  type: prometheus
+
+  access: proxy
+
+  url: http://mimir-query-frontend:9009/prometheus
+
+  isDefault: true
