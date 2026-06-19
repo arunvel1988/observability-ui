@@ -1,120 +1,91 @@
+version: "3.9"
+
 services:
 
+  kafka:
+    image: apache/kafka:3.9.0
+    container_name: kafka
+    hostname: kafka
 
- kafka:
+    ports:
+      - "9092:9092"
 
-  image: bitnami/kafka:latest
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_LISTENERS: PLAINTEXT://kafka:9092,CONTROLLER://kafka:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
 
-  container_name: kafka
 
+  app:
+    build:
+      context: ./app
 
-  environment:
+    container_name: app
 
-   - KAFKA_ENABLE_KRAFT=yes
+    ports:
+      - "8000:8000"
 
-   - KAFKA_CFG_NODE_ID=1
+    restart: always
 
-   - KAFKA_CFG_PROCESS_ROLES=broker,controller
 
-   - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+  alloy:
+    image: grafana/alloy:latest
 
-   - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
+    container_name: alloy
 
-   - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+    volumes:
+      - ./alloy/config.alloy:/etc/alloy/config.alloy
 
-   - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@kafka:9093
+    command:
+      - run
+      - /etc/alloy/config.alloy
 
-   - ALLOW_PLAINTEXT_LISTENER=yes
+    depends_on:
+      - app
+      - mimir
 
 
+  mimir:
+    image: grafana/mimir:latest
 
- app:
+    container_name: mimir
 
-  build: ./app
+    command:
+      - -config.file=/etc/mimir/mimir.yaml
 
-  container_name: app
+    volumes:
+      - ./mimir/mimir.yaml:/etc/mimir/mimir.yaml
+      - mimir-data:/data
 
-  ports:
-   - "8000:8000"
+    ports:
+      - "9009:9009"
 
+    depends_on:
+      - kafka
 
 
- alloy:
+  grafana:
+    image: grafana/grafana:latest
 
-  image: grafana/alloy:latest
+    container_name: grafana
 
-  container_name: alloy
+    ports:
+      - "3000:3000"
 
+    volumes:
+      - ./grafana/datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml
 
-  volumes:
-
-   - ./alloy/config.alloy:/etc/alloy/config.alloy
-
-
-  command:
-
-   - run
-
-   - /etc/alloy/config.alloy
-
-
-  depends_on:
-
-   - app
-
-
-
- mimir:
-
-
-  image: grafana/mimir:latest
-
-
-  container_name: mimir
-
-
-  command:
-
-   - -config.file=/etc/mimir/mimir.yaml
-
-
-  volumes:
-
-   - ./mimir/mimir.yaml:/etc/mimir/mimir.yaml
-
-   - mimir-data:/data
-
-
-  ports:
-
-   - "9009:9009"
-
-
-  depends_on:
-
-   - kafka
-
-
-
- grafana:
-
-
-  image: grafana/grafana:latest
-
-
-  container_name: grafana
-
-
-  ports:
-
-   - "3000:3000"
-
-
-  volumes:
-
-   - ./grafana/datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml
+    depends_on:
+      - mimir
 
 
 volumes:
 
- mimir-data:
+  mimir-data:
