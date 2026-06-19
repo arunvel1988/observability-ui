@@ -1,0 +1,36 @@
+alloy:
+
+  configMap:
+
+    create: true
+
+    content: |
+
+
+      prometheus.scrape "app" {
+
+
+        targets = [
+          {
+            "__address__" = "mimir-demo-app.default.svc.cluster.local:8000",
+          },
+        ]
+
+
+        forward_to = [
+          prometheus.remote_write.mimir.receiver,
+        ]
+
+      }
+
+
+      prometheus.remote_write "mimir" {
+
+
+        endpoint {
+
+          url="http://mimir-nginx.mimir-test.svc.cluster.local/api/v1/push"
+
+        }
+
+      }
