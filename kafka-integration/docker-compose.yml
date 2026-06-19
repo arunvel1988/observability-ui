@@ -3,6 +3,7 @@ version: "3.9"
 services:
 
   kafka:
+
     image: apache/kafka:3.9.0
 
     container_name: kafka
@@ -37,6 +38,25 @@ services:
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
 
 
+    healthcheck:
+
+      test:
+        [
+          "CMD",
+          "/opt/kafka/bin/kafka-topics.sh",
+          "--bootstrap-server",
+          "kafka:9092",
+          "--list"
+        ]
+
+      interval: 10s
+
+      timeout: 5s
+
+      retries: 10
+
+
+
   app:
 
     build:
@@ -49,30 +69,6 @@ services:
 
     restart: always
 
-
-  alloy:
-
-    image: grafana/alloy:latest
-
-    container_name: alloy
-
-    volumes:
-
-      - ./alloy/config.alloy:/etc/alloy/config.alloy
-
-
-    command:
-
-      - run
-
-      - /etc/alloy/config.alloy
-
-
-    depends_on:
-
-      - app
-
-      - mimir
 
 
   mimir:
@@ -103,12 +99,43 @@ services:
 
     depends_on:
 
-      - kafka
+      kafka:
+
+        condition: service_healthy
+
+
+
+  alloy:
+
+    image: grafana/alloy:latest
+
+    container_name: alloy
+
+
+    volumes:
+
+      - ./alloy/config.alloy:/etc/alloy/config.alloy
+
+
+    command:
+
+      - run
+
+      - /etc/alloy/config.alloy
+
+
+    depends_on:
+
+      - app
+
+      - mimir
+
 
 
   grafana:
 
     image: grafana/grafana:latest
+
 
     container_name: grafana
 
@@ -126,6 +153,7 @@ services:
     depends_on:
 
       - mimir
+
 
 
 volumes:
