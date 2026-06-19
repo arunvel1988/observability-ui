@@ -1,4 +1,5 @@
-for i in {1..200}
+while true
 do
-curl localhost:8000
+  curl localhost:8000/
+  sleep 1
 done
