@@ -1,1 +1,4 @@
 
+app:orders:rate1m
+
+curl localhost:9009/prometheus/api/v1/alerts
