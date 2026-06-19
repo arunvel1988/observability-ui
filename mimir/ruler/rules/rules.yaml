@@ -1,0 +1,22 @@
+groups:
+
+- name: order_rules
+
+  interval: 10s
+
+  rules:
+
+  - record: app_orders_rate1m
+
+    expr: rate(orders_total[1m])
+
+
+  - alert: HighFailedOrders
+
+    expr: rate(orders_total{status="failed"}[1m]) > 0
+
+    for: 10s
+
+    labels:
+
+      severity: warning
