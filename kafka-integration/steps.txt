@@ -1,5 +1,5 @@
 
-docker logs mimir | grep kafka
+docker logs mimir-0 | grep kafka
 
 orders_total
 
