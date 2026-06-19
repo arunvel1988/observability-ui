@@ -20,6 +20,7 @@ kubectl port-forward \
 
 
 
+
 ################################################################################################################
 
 nano alloy-values.yaml
@@ -123,11 +124,14 @@ enabled: false
 
 #################################################
 
-helm install alloy grafana/alloy --namespace alloy-test --create-namespace -f alloy-values.yaml
 
-kubectl port-forward service/grafana 3000:3000
+helm install alloy grafana/alloy \
+-n monitoring \
+-f alloy-values.yaml
 
-http://mimir-nginx.mimir-test.svc:80/prometheus
+kubectl get pods -n monitoring
+
+http://mimir-nginx.mimir-test.svc.cluster.local/prometheus
 
 #################################################
 
