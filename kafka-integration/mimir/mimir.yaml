@@ -1,4 +1,5 @@
-target: all
+target: distributor,ingester,querier,query-frontend,store-gateway,compactor
+
 
 multitenancy_enabled: false
 
@@ -14,13 +15,16 @@ common:
     backend: filesystem
 
 
+
 blocks_storage:
 
   backend: filesystem
 
+
   filesystem:
 
     dir: /data/blocks
+
 
   tsdb:
 
@@ -33,6 +37,7 @@ ingester:
   ring:
 
     replication_factor: 1
+
 
     kvstore:
 
@@ -56,6 +61,7 @@ store_gateway:
 
     replication_factor: 1
 
+
     kvstore:
 
       store: inmemory
@@ -65,16 +71,6 @@ store_gateway:
 compactor:
 
   data_dir: /data/compactor
-
-
-
-ruler_storage:
-
-  backend: filesystem
-
-  filesystem:
-
-    dir: /data/ruler
 
 
 
