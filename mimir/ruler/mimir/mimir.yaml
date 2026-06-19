@@ -2,6 +2,7 @@ target: all
 
 multitenancy_enabled: false
 
+
 server:
   http_listen_port: 9009
 
@@ -27,30 +28,28 @@ ingester:
 
 
 ruler:
-
   enable_api: true
 
   rule_path: /tmp/mimir-rules
 
   evaluation_interval: 10s
 
+  ring:
+    kvstore:
+      store: inmemory
+
 
 ruler_storage:
-
   backend: local
 
   local:
-
     directory: /rules
 
 
 compactor:
-
   data_dir: /data/compactor
 
 
 store_gateway:
-
   sharding_ring:
-
     replication_factor: 1
