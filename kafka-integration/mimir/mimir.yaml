@@ -1,0 +1,58 @@
+target: all
+
+
+server:
+  http_listen_port: 9009
+
+
+common:
+
+  storage:
+
+    backend: filesystem
+
+
+blocks_storage:
+
+  backend: filesystem
+
+  filesystem:
+    dir: /data/blocks
+
+
+ingester:
+
+  ring:
+
+    replication_factor: 1
+
+    kvstore:
+      store: inmemory
+
+
+
+distributor:
+
+  ring:
+
+    kvstore:
+      store: inmemory
+
+
+
+ingest_storage:
+
+  enabled: true
+
+
+  kafka:
+
+    address: kafka:9092
+
+    topic: mimir-ingest
+
+
+
+limits:
+
+  max_global_series_per_user: 100000
