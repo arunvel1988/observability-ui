@@ -2,3 +2,5 @@ docker build -t mimir-demo-app:v1 .
 
 kind load docker-image mimir-demo-app:v1
 
+
+kubectl port-forward svc/mimir-demo-app 8000:8000
