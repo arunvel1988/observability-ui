@@ -1,4 +1,4 @@
-target: distributor,ingester,querier,query-frontend,store-gateway,compactor
+target: distributor,ingester,querier,store-gateway,compactor
 
 
 multitenancy_enabled: false
