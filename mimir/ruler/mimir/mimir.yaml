@@ -12,46 +12,65 @@ server:
 
 common:
 
- storage:
+  storage:
 
-  backend: filesystem
+    backend: filesystem
 
 
 
 blocks_storage:
 
- backend: filesystem
+  backend: filesystem
 
 
- filesystem:
+  filesystem:
 
-  dir: /data/blocks
+    dir: /data/blocks
+
+
+  tsdb:
+
+    dir: /data/tsdb
+
+
+
+ingester:
+
+  ring:
+
+    replication_factor: 1
 
 
 
 ruler:
 
- rule_path: /data/rules-temp
+  enable_api: true
 
+  rule_path: /tmp/mimir-rules
 
- enable_api: true
-
-
- alertmanager_url: http://alertmanager:9093
+  evaluation_interval: 10s
 
 
 
 ruler_storage:
 
- backend: filesystem
+  backend: filesystem
 
 
- filesystem:
+  filesystem:
 
-  dir: /rules
+    dir: /rules
 
 
 
-limits:
+compactor:
 
- ruler_evaluation_interval: 10s
+  data_dir: /data/compactor
+
+
+
+store_gateway:
+
+  sharding_ring:
+
+    replication_factor: 1
