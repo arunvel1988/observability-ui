@@ -6,17 +6,26 @@ groups:
 
   rules:
 
-  - record: app_orders_rate1m
+  - record: app_orders_total
 
-    expr: rate(orders_total[1m])
+    expr: orders_total
 
 
-  - alert: HighFailedOrders
+  - record: app_orders_5m
 
-    expr: rate(orders_total{status="failed"}[1m]) > 0
+    expr: increase(orders_total[5m])
+
+
+  - alert: HighOrders
+
+    expr: increase(orders_total[5m]) > 10
 
     for: 10s
 
     labels:
 
       severity: warning
+
+    annotations:
+
+      message: High order volume detected
