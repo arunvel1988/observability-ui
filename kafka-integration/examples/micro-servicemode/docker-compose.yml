@@ -1,0 +1,149 @@
+version: "3.9"
+
+services:
+
+  kafka:
+    image: apache/kafka:3.9.0
+    container_name: kafka
+    hostname: kafka
+
+    ports:
+      - "9092:9092"
+
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_LISTENERS: PLAINTEXT://kafka:9092,CONTROLLER://kafka:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+
+  app:
+    build:
+      context: ./app
+
+    container_name: app
+
+    ports:
+      - "8000:8000"
+
+
+  alloy:
+    image: grafana/alloy:latest
+
+    container_name: alloy
+
+    volumes:
+      - ./alloy/config.alloy:/etc/alloy/config.alloy
+
+    command:
+      - run
+      - /etc/alloy/config.alloy
+
+    depends_on:
+      - app
+
+
+
+  mimir-distributor:
+    image: grafana/mimir:latest
+
+    container_name: mimir-distributor
+
+    command:
+      - -target=distributor
+      - -config.file=/etc/mimir/mimir.yaml
+
+    volumes:
+      - ./mimir/mimir.yaml:/etc/mimir/mimir.yaml
+
+    ports:
+      - "9009:9009"
+
+    depends_on:
+      - kafka
+
+
+
+  mimir-ingester:
+    image: grafana/mimir:latest
+
+    container_name: mimir-ingester
+
+    command:
+      - -target=ingester
+      - -config.file=/etc/mimir/mimir.yaml
+
+    volumes:
+      - ./mimir/mimir.yaml:/etc/mimir/mimir.yaml
+      - mimir-data:/data
+
+    depends_on:
+      - kafka
+
+
+
+  mimir-querier:
+    image: grafana/mimir:latest
+
+    container_name: mimir-querier
+
+    command:
+      - -target=querier
+      - -config.file=/etc/mimir/mimir.yaml
+
+    volumes:
+      - ./mimir/mimir.yaml:/etc/mimir/mimir.yaml
+
+
+
+  mimir-query-frontend:
+    image: grafana/mimir:latest
+
+    container_name: mimir-query-frontend
+
+    command:
+      - -target=query-frontend
+      - -config.file=/etc/mimir/mimir.yaml
+
+    volumes:
+      - ./mimir/mimir.yaml:/etc/mimir/mimir.yaml
+
+    ports:
+      - "9010:9009"
+
+
+
+  mimir-compactor:
+    image: grafana/mimir:latest
+
+    container_name: mimir-compactor
+
+    command:
+      - -target=compactor
+      - -config.file=/etc/mimir/mimir.yaml
+
+    volumes:
+      - ./mimir/mimir.yaml:/etc/mimir/mimir.yaml
+      - mimir-data:/data
+
+
+
+  grafana:
+    image: grafana/grafana:latest
+
+    container_name: grafana
+
+    ports:
+      - "3000:3000"
+
+    volumes:
+      - ./grafana/datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml
+
+
+volumes:
+
+  mimir-data:
