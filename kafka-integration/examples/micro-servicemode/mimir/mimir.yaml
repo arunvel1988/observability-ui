@@ -1,0 +1,91 @@
+multitenancy_enabled: false
+
+
+server:
+  http_listen_port: 9009
+
+
+memberlist:
+  join_members:
+    - mimir-distributor
+    - mimir-ingester
+    - mimir-querier
+    - mimir-query-frontend
+    - mimir-compactor
+
+
+common:
+  storage:
+    backend: filesystem
+
+
+blocks_storage:
+
+  backend: filesystem
+
+  filesystem:
+    dir: /data/blocks
+
+
+
+ingester:
+
+  ring:
+
+    replication_factor: 1
+
+    kvstore:
+      store: memberlist
+
+
+
+distributor:
+
+  ring:
+
+    kvstore:
+      store: memberlist
+
+
+
+ruler_storage:
+
+  backend: filesystem
+
+  filesystem:
+    dir: /data/ruler
+
+
+
+compactor:
+
+  data_dir: /data/compactor
+
+
+
+store_gateway:
+
+  sharding_ring:
+
+    replication_factor: 1
+
+    kvstore:
+      store: memberlist
+
+
+
+ingest_storage:
+
+  enabled: true
+
+  kafka:
+
+    address: kafka:9092
+
+    topic: mimir-ingest
+
+
+
+limits:
+
+  max_global_series_per_user: 1000000
