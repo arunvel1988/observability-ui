@@ -1,10 +1,8 @@
 auth_enabled: true
 
-
 server:
 
   http_listen_port: 3100
-
 
 
 common:
@@ -18,7 +16,6 @@ common:
     kvstore:
 
       store: inmemory
-
 
 
 
@@ -42,8 +39,6 @@ schema_config:
 
 
 
-
-
 storage_config:
 
   aws:
@@ -62,17 +57,15 @@ storage_config:
 
 
 
-
-
 limits_config:
 
   ingestion_rate_mb: 5
 
   ingestion_burst_size_mb: 10
 
-  retention_period: 180d
+  reject_old_samples: true
 
-
+  reject_old_samples_max_age: 168h
 
 
 
@@ -83,8 +76,6 @@ compactor:
   retention_enabled: true
 
   delete_request_store: s3
-
-
 
 
 

@@ -1,90 +1,33 @@
-otelcol.receiver.otlp "logs" {
+local.file_match "docker_logs" {
 
-  grpc {
-    endpoint = "0.0.0.0:4317"
-  }
-
-  output {
-    logs = [
-      otelcol.processor.filter.security.input,
-      otelcol.processor.filter.debug.input,
-    ]
-  }
+  path_targets = [
+    {
+      __path__ = "/var/lib/docker/containers/*/*.log",
+    },
+  ]
 }
 
 
 
-otelcol.processor.filter "security" {
+loki.source.file "containers" {
 
-  error_mode = "ignore"
+  targets = local.file_match.docker_logs.targets
 
-  logs {
-
-    log_record = [
-      "IsMatch(body, \"SECURITY\")",
-    ]
-
-  }
-
-
-  output {
-
-    logs = [
-      otelcol.exporter.loki.security.input,
-    ]
-
-  }
-
+  forward_to = [
+    loki.process.parse.receiver,
+  ]
 }
 
 
 
+loki.process "parse" {
 
-otelcol.processor.filter "debug" {
-
-  error_mode = "ignore"
-
-  logs {
-
-    log_record = [
-      "not IsMatch(body, \"SECURITY\")",
-    ]
-
-  }
-
-
-  output {
-
-    logs = [
-      otelcol.exporter.loki.debug.input,
-    ]
-
-  }
-
-}
-
-
-
-
-otelcol.exporter.loki "security" {
+  stage.docker {}
 
   forward_to = [
     loki.write.security.receiver,
   ]
-
 }
-
-
-
-
-otelcol.exporter.loki "debug" {
-
-  forward_to = [
-    loki.write.debug.receiver,
-  ]
-
-}
-
 
 
 
@@ -94,22 +37,9 @@ loki.write "security" {
 
     url = "http://loki:3100/loki/api/v1/push"
 
-    tenant_id = "security"
-
-  }
-
-}
-
-
-
-
-loki.write "debug" {
-
-  endpoint {
-
-    url = "http://loki:3100/loki/api/v1/push"
-
-    tenant_id = "debug"
+    headers = {
+      "X-Scope-OrgID" = "security",
+    }
 
   }
 
