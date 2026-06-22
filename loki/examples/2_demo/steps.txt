@@ -18,6 +18,11 @@ helm repo add minio https://charts.min.io/
 
 helm repo update
 
+
+helm upgrade loki grafana/loki \
+  -n observability \
+  -f values.yaml
+
 helm install minio minio/minio \
 -n observability \
 --set rootUser=admin \
