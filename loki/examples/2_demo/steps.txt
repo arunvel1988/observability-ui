@@ -1,0 +1,105 @@
+ssh -L 5006:localhost:5006 pep@34.14.184.202
+
+
+kubectl create ns observability
+kubectl create ns apps
+
+helm repo add grafana https://grafana.github.io/helm-charts
+
+helm repo update
+
+helm search repo grafana/loki
+
+helm search repo grafana/mimir
+
+helm search repo grafana/alloy
+
+helm repo add minio https://charts.min.io/
+
+helm repo update
+
+helm install minio minio/minio \
+-n observability \
+--set rootUser=admin \
+--set rootPassword=password123 \
+--set buckets[0].name=loki-data \
+--set buckets[1].name=mimir-data
+
+
+
+##################################################################################
+
+      
+#####################################################################
+
+kubectl get pods -n observability
+
+
+
+
+
+###############################################################
+
+
+
+helm install loki grafana/loki \
+-n observability \
+-f loki-values.yaml
+
+###############################################################
+kubectl get pods -n observability
+
+
+###############################################################
+
+helm install mimir grafana/mimir-distributed \
+-n observability \
+-f mimir-values.yaml
+
+
+
+
+
+helm install alloy grafana/alloy \
+-n observability \
+-f alloy-values.yaml
+
+helm upgrade alloy grafana/alloy \
+  -n observability \
+  -f alloy-values.yaml
+#####################################################################
+
+
+
+
+
+kubectl apply -f app.yaml
+
+kubectl logs -n apps deployment/python-app
+
+kubectl port-forward -n observability svc/loki-write 3100:3100
+
+
+
+kubectl exec -n observability loki-write-0 -- \
+wget -qO- localhost:3100/metrics \
+| grep ingester
+
+kubectl exec -n observability loki-backend-0 -- \
+wget -qO- localhost:3100/metrics \
+| grep compactor
+
+kubectl exec -n observability loki-backend-0 -- \
+wget -qO- localhost:3100/metrics \
+| grep ruler
+
+kubectl scale statefulset loki-write \
+-n observability \
+--replicas=0
+
+kubectl scale statefulset loki-write \
+-n observability \
+--replicas=1
+kubectl scale deployment loki-read \
+-n observability \
+--replicas=0

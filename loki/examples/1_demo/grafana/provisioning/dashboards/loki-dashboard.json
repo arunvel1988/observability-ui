@@ -1,0 +1,153 @@
+{
+ "title": "Python Loki Observability",
+
+ "uid": "python-loki",
+
+ "schemaVersion": 39,
+
+ "version": 1,
+
+
+ "panels": [
+
+
+  {
+   "id":1,
+
+   "title":"Application Logs",
+
+   "type":"logs",
+
+   "datasource":"Loki",
+
+
+   "targets":[
+    {
+     "expr":"{service=\"payment-service\"}"
+    }
+   ],
+
+
+   "gridPos":{
+    "x":0,
+    "y":0,
+    "w":24,
+    "h":10
+   }
+
+  },
+
+
+  {
+
+   "id":2,
+
+   "title":"Only ERROR Logs",
+
+   "type":"logs",
+
+   "datasource":"Loki",
+
+
+   "targets":[
+
+    {
+     "expr":"{level=\"ERROR\"}"
+    }
+
+   ],
+
+
+   "gridPos":{
+
+    "x":0,
+    "y":10,
+    "w":12,
+    "h":8
+
+   }
+
+  },
+
+
+  {
+
+   "id":3,
+
+
+   "title":"Error Count Last 5 Minutes",
+
+
+   "type":"timeseries",
+
+
+   "datasource":"Loki",
+
+
+   "targets":[
+
+    {
+
+     "expr":
+     "sum(count_over_time({level=\"ERROR\"}[5m]))"
+
+    }
+
+   ],
+
+
+   "gridPos":{
+
+    "x":12,
+    "y":10,
+    "w":12,
+    "h":8
+
+   }
+
+  },
+
+
+  {
+
+   "id":4,
+
+
+   "title":"Total Log Volume",
+
+
+   "type":"timeseries",
+
+
+   "datasource":"Loki",
+
+
+   "targets":[
+
+    {
+
+     "expr":
+     "sum(rate({service=\"payment-service\"}[1m]))"
+
+    }
+
+   ],
+
+
+   "gridPos":{
+
+    "x":0,
+
+    "y":18,
+
+    "w":24,
+
+    "h":8
+
+   }
+
+  }
+
+ ]
+
+}

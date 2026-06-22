@@ -1,0 +1,48 @@
+local.file_match "logs" {
+  path_targets = [{
+    __path__ = "/logs/app.log",
+    job      = "checkout",
+  }]
+}
+
+loki.source.file "app" {
+  targets    = local.file_match.logs.targets
+  forward_to = [loki.process.logs.receiver]
+}
+
+loki.process "logs" {
+
+  stage.json {
+    expressions = {
+      service    = "service",
+      user_id    = "user_id",
+      session_id = "session_id",
+      order_id   = "order_id",
+    }
+  }
+
+  stage.labels {
+    values = {
+      service    = "",
+      user_id    = "",
+      session_id = "",
+      order_id   = "",
+    }
+  }
+
+  stage.label_drop {
+    values = [
+      "user_id",
+      "session_id",
+      "order_id",
+    ]
+  }
+
+  forward_to = [loki.write.default.receiver]
+}
+
+loki.write "default" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+}

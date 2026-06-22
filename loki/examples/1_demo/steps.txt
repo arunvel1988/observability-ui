@@ -1,1 +1,53 @@
 
+
+docker ps
+
+curl localhost:3100/ready
+
+curl localhost:3100/metrics
+
+curl -s localhost:3100/metrics \
+| grep loki_distributor_lines_received_total
+
+for i in {1..100}
+do
+curl localhost:5000/payment
+done
+
+
+
+curl -s localhost:3100/metrics \
+| grep loki_distributor_lines_received_total
+
+
+curl -s localhost:3100/metrics \
+| grep bank-a
+
+curl -s localhost:3100/metrics \
+| grep loki_ingester_memory_streams
+
+curl -s localhost:3100/metrics \
+| grep loki_ingester_chunks_created_total
+
+
+docker logs -f loki
+
+
+for i in {1..5000}
+do
+curl localhost:5000/error
+done
+
+
+docker exec -it minio sh
+
+
+mc alias set local http://localhost:9000 admin password123
+
+
+mc ls local/loki-data
+
+mc ls --recursive local/loki-data/bank-a
+
+
+

@@ -1,0 +1,4 @@
+
+count by(user_id)(
+  {job="checkout"}
+)

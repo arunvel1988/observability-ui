@@ -1,0 +1,159 @@
+services:
+
+
+ app:
+
+
+  image: python:3.11
+
+
+  container_name: payment-service
+
+
+  working_dir: /app
+
+
+  volumes:
+
+    - ./app:/app
+
+
+  command:
+
+    sh -c "pip install -r requirements.txt && python app.py"
+
+
+  ports:
+
+    - "5000:5000"
+
+
+
+
+ alloy:
+
+
+  image: grafana/alloy:latest
+
+
+  container_name: alloy
+
+
+  command:
+
+   - run
+
+   - /etc/alloy/config.alloy
+
+
+  volumes:
+
+   - ./alloy/config.alloy:/etc/alloy/config.alloy
+
+   - /var/lib/docker/containers:/var/lib/docker/containers:ro
+
+
+
+
+ loki:
+
+
+  image: grafana/loki:latest
+
+
+  container_name: loki
+
+
+  ports:
+
+   - "3100:3100"
+
+
+  command:
+
+   - -config.file=/etc/loki/loki.yml
+
+
+  volumes:
+
+   - ./loki/loki.yml:/etc/loki/loki.yml
+
+
+
+ minio:
+
+
+  image: minio/minio
+
+
+  container_name: minio
+
+
+  command:
+
+    server /data --console-address ":9001"
+
+
+  environment:
+
+
+    MINIO_ROOT_USER: admin
+
+
+    MINIO_ROOT_PASSWORD: password123
+
+
+  ports:
+
+
+    - "9000:9000"
+
+
+    - "9001:9001"
+
+
+
+
+ createbucket:
+
+
+  image: minio/mc
+
+
+  depends_on:
+
+    - minio
+
+
+  entrypoint: >
+
+    /bin/sh -c "
+
+    sleep 10;
+
+    mc alias set local http://minio:9000 admin password123;
+
+    mc mb local/loki-data;
+
+    exit 0;
+
+    "
+
+
+
+
+ grafana:
+
+
+  image: grafana/grafana
+
+
+  container_name: grafana
+
+
+  ports:
+
+    - "3000:3000"
+  volumes:
+    - ./grafana/provisioning:/etc/grafana/provisioning
+    - ./grafana/provisioning/dashboards:/var/lib/grafana/dashboards

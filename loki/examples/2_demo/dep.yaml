@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+ name: python-app
+ namespace: apps
+
+spec:
+
+ replicas: 3
+
+
+ selector:
+
+  matchLabels:
+
+   app: python-app
+
+
+ template:
+
+  metadata:
+
+   labels:
+
+    app: python-app
+
+
+  spec:
+
+   containers:
+
+   - name: app
+
+     image: arunvel1988/loki-logs
+     ports:
+
+     - containerPort: 5000
