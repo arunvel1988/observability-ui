@@ -1,0 +1,71 @@
+version: "3.9"
+
+services:
+
+  loki:
+
+    image: grafana/loki:3.0.0
+
+    command:
+
+      - -config.file=/etc/loki/loki.yml
+
+    ports:
+
+      - "3100:3100"
+
+    volumes:
+
+      - ./loki/loki.yml:/etc/loki/loki.yml
+
+      - ./loki/rules:/etc/loki/rules
+
+
+
+  alloy:
+
+    image: grafana/alloy:latest
+
+    command:
+
+      - run
+
+      - /etc/alloy/config.alloy
+
+    volumes:
+
+      - ./alloy/config.alloy:/etc/alloy/config.alloy
+
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+
+    depends_on:
+
+      - loki
+
+
+
+  app:
+
+    build: ./app
+
+    depends_on:
+
+      - alloy
+
+
+
+  grafana:
+
+    image: grafana/grafana:latest
+
+    ports:
+
+      - "3000:3000"
+
+    volumes:
+
+      - ./grafana/provisioning:/etc/grafana/provisioning
+
+    depends_on:
+
+      - loki
