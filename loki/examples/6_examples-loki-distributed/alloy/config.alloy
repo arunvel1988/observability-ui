@@ -1,0 +1,37 @@
+local.file_match "docker_logs" {
+
+  path_targets = [
+
+    {
+
+      __path__ = "/var/lib/docker/containers/*/*-json.log",
+
+    },
+
+  ]
+
+}
+
+loki.source.file "docker" {
+
+  targets = local.file_match.docker_logs.targets
+
+  forward_to = [
+
+    loki.write.loki.receiver,
+
+  ]
+
+}
+
+loki.write "loki" {
+
+  endpoint {
+
+    url = "http://CONTROL_PLANE_IP:NODEPORT/loki/api/v1/push"
+
+    tenant_id = "demo"
+
+  }
+
+}

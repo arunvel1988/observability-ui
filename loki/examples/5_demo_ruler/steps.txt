@@ -1,2 +1,7 @@
 curl localhost:3100/loki/api/v1/rules
 
+
+
+curl -G \
+"http://localhost:3100/loki/api/v1/query" \
+--data-urlencode 'query=sum(count_over_time({filename=~".+"} |= "security alert" [1m]))'
