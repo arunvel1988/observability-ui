@@ -2,25 +2,68 @@ import time
 import logging
 
 
-logging.basicConfig(
- level=logging.INFO
+from opentelemetry.sdk._logs import LoggerProvider
+from opentelemetry.sdk._logs import LoggingHandler
+
+
+from opentelemetry.sdk._logs.export import (
+    BatchLogRecordProcessor
+)
+
+from opentelemetry.exporter.otlp.proto.grpc._log_exporter import (
+    OTLPLogExporter
+)
+
+from opentelemetry import _logs
+
+
+
+provider = LoggerProvider()
+
+_logs.set_logger_provider(provider)
+
+
+exporter = OTLPLogExporter(
+    endpoint="http://alloy:4317",
+    insecure=True
 )
 
 
-log=logging.getLogger()
+provider.add_log_record_processor(
+    BatchLogRecordProcessor(exporter)
+)
+
+
+handler = LoggingHandler(
+    level=logging.INFO,
+    logger_provider=provider
+)
+
+
+logging.basicConfig(
+    level=logging.INFO,
+    handlers=[handler]
+)
+
+
+log=logging.getLogger("checkout-service")
 
 
 
 while True:
 
+
     log.info(
-      "debug log"
+        "debug log checkout success"
     )
+
 
     log.error(
-      "security alert"
+        "SECURITY invalid login detected"
     )
 
-    print("logs sent")
+
+    print("sent logs")
+
 
     time.sleep(2)
