@@ -1,0 +1,71 @@
+---
+image:
+  repository: grafana/grafana
+  tag: ""
+  pullPolicy: IfNotPresent
+
+ingress:
+  enabled: false
+persistence:
+  type: pvc
+  enabled: false
+  inMemory:
+    enabled: true
+
+adminUser: admin
+adminPassword: adminpassword
+
+env: {}
+
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+    - name: LokiRuanBekker
+      type: loki
+      uid: loki
+      url: http://loki-gateway.default.svc.cluster.local:80/
+      access: proxy
+      jsonData:
+        maxLines: 1000
+        httpHeaderName1: "X-Scope-OrgID"
+      secureJsonData:
+        httpHeaderValue1: ruanbekker
+
+dashboardProviders:
+  dashboardproviders.yaml:
+    apiVersion: 1
+    providers:
+    - name: 'default'
+      orgId: 1
+      folder: 'Imported'
+      type: file
+      disableDeletion: false
+      editable: true
+      options:
+        path: /var/lib/grafana/dashboards/default
+dashboards:
+  default:
+    loki-dashboard:
+      gnetId: 14055
+      revision: 5
+      datasource: Loki
+
+grafana.ini:
+  paths:
+    data: /var/lib/grafana/
+
+sidecar:
+  alerts:
+    enabled: true
+    label: grafana_alert
+    labelValue: "1"
+    searchNamespace: null
+  dashboards:
+    enabled: true
+    label: grafana_dashboard
+    labelValue: "1"
+    searchNamespace: null
+    folderAnnotation: grafana_folder
+    provider:
+      foldersFromFilesStructure: true

@@ -1,0 +1,69 @@
+deploymentMode: Distributed
+
+loki:
+  schemaConfig:
+    configs:
+      - from: 2024-04-01
+        store: tsdb
+        object_store: s3
+        schema: v13
+        index:
+          prefix: loki_index_
+          period: 24h
+  ingester:
+    chunk_encoding: snappy
+  tracing:
+    enabled: true
+  querier:
+    max_concurrent: 4
+
+  storage:
+    type: s3
+    bucketNames:
+      chunks: "chunks"
+      ruler: "ruler"
+      admin: "admin"
+    s3:
+      access_key_id: enterprise-logs
+      bucketnames: chunks
+      endpoint: loki-minio.default.svc:9000
+      insecure: true
+      s3forcepathstyle: true
+      secret_access_key: supersecret
+
+ingester:
+  replicas: 3
+querier:
+  replicas: 3
+  maxUnavailable: 2
+queryFrontend:
+  replicas: 2
+  maxUnavailable: 1
+queryScheduler:
+  replicas: 2
+distributor:
+  replicas: 3
+  maxUnavailable: 2
+compactor:
+  replicas: 1
+indexGateway:
+  replicas: 2
+  maxUnavailable: 1
+
+bloomCompactor:
+  replicas: 0
+bloomGateway:
+  replicas: 0
+
+backend:
+  replicas: 0
+read:
+  replicas: 0
+write:
+  replicas: 0
+
+singleBinary:
+  replicas: 0
+
+minio:
+  enabled: true
