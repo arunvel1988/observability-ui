@@ -1,0 +1,25 @@
+kubectl get svc -n observability
+
+kubectl port-forward -n observability svc/loki-gateway 3100:80
+
+kubectl port-forward -n observability svc/loki-gateway 3100:80
+
+curl http://localhost:3100/ready
+
+curl -X POST http://localhost:3100/loki/api/v1/push \
+-H "Content-Type: application/json" \
+-H "X-Scope-OrgID: demo" \
+-d '{
+ "streams":[
+  {
+   "stream":{"job":"test"},
+   "values":[
+    ["'"$(date +%s%N)"'","HELLO_BLOOM_TEST"]
+   ]
+  }
+ ]
+}'
+kubectl port-forward -n observability svc/loki-gateway 3100:80
+
+curl -G http://localhost:3100/loki/api/v1/query \
+--data-urlencode 'query={job="test"}'
