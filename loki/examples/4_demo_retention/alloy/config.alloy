@@ -14,10 +14,6 @@ otelcol.receiver.otlp "logs" {
 
 
 
-###################################
-# SECURITY LOGS
-###################################
-
 otelcol.processor.filter "security" {
 
   error_mode = "ignore"
@@ -43,9 +39,6 @@ otelcol.processor.filter "security" {
 
 
 
-###################################
-# DEBUG LOGS
-###################################
 
 otelcol.processor.filter "debug" {
 
@@ -73,10 +66,6 @@ otelcol.processor.filter "debug" {
 
 
 
-###################################
-# EXPORT SECURITY
-###################################
-
 otelcol.exporter.loki "security" {
 
   forward_to = [
@@ -87,9 +76,6 @@ otelcol.exporter.loki "security" {
 
 
 
-###################################
-# EXPORT DEBUG
-###################################
 
 otelcol.exporter.loki "debug" {
 
@@ -101,9 +87,6 @@ otelcol.exporter.loki "debug" {
 
 
 
-###################################
-# LOKI SECURITY TENANT
-###################################
 
 loki.write "security" {
 
@@ -119,9 +102,6 @@ loki.write "security" {
 
 
 
-###################################
-# LOKI DEBUG TENANT
-###################################
 
 loki.write "debug" {
 
