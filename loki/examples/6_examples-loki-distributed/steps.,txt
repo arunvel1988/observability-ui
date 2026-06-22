@@ -6,6 +6,9 @@ kubectl port-forward -n observability svc/loki-gateway 3100:80
 
 curl http://localhost:3100/ready
 
+curl http://localhost:3100/loki/api/v1/labels \
+-H "X-Scope-OrgID: demo"
+
 curl -X POST http://localhost:3100/loki/api/v1/push \
 -H "Content-Type: application/json" \
 -H "X-Scope-OrgID: demo" \
