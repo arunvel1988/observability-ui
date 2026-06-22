@@ -1,0 +1,11 @@
+overrides:
+
+  security:
+
+    retention_period: 4320h
+
+
+
+  debug:
+
+    retention_period: 168h

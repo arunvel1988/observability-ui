@@ -1,0 +1,43 @@
+otelcol.receiver.otlp "logs" {
+
+ grpc {
+
+   endpoint="0.0.0.0:4317"
+
+ }
+
+ output {
+
+   logs=[
+     otelcol.exporter.loki.logs.input
+   ]
+
+ }
+
+}
+
+
+
+
+otelcol.exporter.loki "logs" {
+
+ forward_to=[
+   loki.write.default.receiver
+ ]
+
+}
+
+
+
+
+loki.write "default" {
+
+ endpoint {
+
+   url="http://loki:3100/loki/api/v1/push"
+
+   tenant_id="debug"
+
+ }
+
+}

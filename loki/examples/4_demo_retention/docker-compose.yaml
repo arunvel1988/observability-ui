@@ -1,0 +1,132 @@
+version: "3.9"
+
+services:
+
+  minio:
+
+    image: minio/minio
+
+    command:
+      server /data --console-address ":9001"
+
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: admin
+
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+
+    volumes:
+      - ./minio:/data
+
+
+
+  createbuckets:
+
+    image: minio/mc
+
+    depends_on:
+      - minio
+
+    entrypoint: >
+      /bin/sh -c "
+
+      sleep 10;
+
+      mc alias set local
+      http://minio:9000
+      admin
+      admin;
+
+      mc mb -p local/loki || true;
+
+      mc anonymous set private local/loki;
+
+      echo bucket created;
+
+      exit 0;
+
+      "
+
+
+
+
+  loki:
+
+    image: grafana/loki:3.0.0
+
+    command:
+
+      - -config.file=/etc/loki/loki.yml
+
+    ports:
+
+      - "3100:3100"
+
+    volumes:
+
+      - ./loki/loki.yaml:/etc/loki/loki.yml
+
+      - ./loki/runtime.yaml:/etc/loki/runtime.yml
+
+    depends_on:
+
+      createbuckets:
+        condition: service_completed_successfully
+
+
+
+
+
+  alloy:
+
+    image: grafana/alloy:latest
+
+    command:
+
+      - run
+
+      - /etc/alloy/config.alloy
+
+    ports:
+
+      - "4317:4317"
+
+    volumes:
+
+      - ./alloy/config.alloy:/etc/alloy/config.alloy
+
+    depends_on:
+
+      - loki
+
+
+
+
+  app:
+
+    build: ./app
+
+    depends_on:
+
+      - alloy
+
+
+
+
+  grafana:
+
+    image: grafana/grafana
+
+    ports:
+
+      - "3000:3000"
+
+    volumes:
+
+      - ./grafana/provisioning:/etc/grafana/provisioning
+
+    depends_on:
+
+      - loki
