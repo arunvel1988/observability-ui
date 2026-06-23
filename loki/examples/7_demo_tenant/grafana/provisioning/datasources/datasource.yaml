@@ -1,0 +1,45 @@
+apiVersion: 1
+
+
+datasources:
+
+
+- name: Loki-Audit
+
+  type: loki
+
+  access: proxy
+
+  url: http://loki:3100
+
+
+  jsonData:
+
+    httpHeaderName1: X-Scope-OrgID
+
+
+  secureJsonData:
+
+    httpHeaderValue1: audit
+
+
+
+
+
+- name: Loki-Error
+
+  type: loki
+
+  access: proxy
+
+  url: http://loki:3100
+
+
+  jsonData:
+
+    httpHeaderName1: X-Scope-OrgID
+
+
+  secureJsonData:
+
+    httpHeaderValue1: error

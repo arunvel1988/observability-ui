@@ -1,0 +1,116 @@
+
+local.file_match "audit" {
+
+
+ path_targets = [
+
+ {
+
+ __path__="/logs/audit.log",
+
+ job="python-app"
+
+ }
+
+ ]
+
+}
+
+
+
+
+local.file_match "error" {
+
+
+ path_targets = [
+
+ {
+
+ __path__="/logs/error.log",
+
+ job="python-app"
+
+ }
+
+ ]
+
+}
+
+
+
+
+
+loki.source.file "audit" {
+
+
+ targets = local.file_match.audit.targets
+
+
+ forward_to = [
+
+ loki.write.audit.receiver
+
+ ]
+
+}
+
+
+
+
+
+loki.source.file "error" {
+
+
+ targets = local.file_match.error.targets
+
+
+ forward_to = [
+
+ loki.write.error.receiver
+
+ ]
+
+}
+
+
+
+
+
+
+
+loki.write "audit" {
+
+
+ endpoint {
+
+
+ url = "http://loki:3100/loki/api/v1/push"
+
+
+ tenant_id = "audit"
+
+
+ }
+
+}
+
+
+
+
+
+
+loki.write "error" {
+
+
+ endpoint {
+
+
+ url = "http://loki:3100/loki/api/v1/push"
+
+
+ tenant_id = "error"
+
+
+ }
+
+}
