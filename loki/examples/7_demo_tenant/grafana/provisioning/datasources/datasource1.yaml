@@ -30,3 +30,13 @@ datasources:
   access: proxy
 
   url: http://mimir:9009/prometheus
+
+
+  jsonData:
+
+    httpHeaderName1: X-Scope-OrgID
+
+
+  secureJsonData:
+
+    httpHeaderValue1: audit
