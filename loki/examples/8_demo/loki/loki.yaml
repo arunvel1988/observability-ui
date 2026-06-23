@@ -1,0 +1,89 @@
+auth_enabled: true
+
+
+server:
+  http_listen_port: 3100
+
+
+
+common:
+
+ path_prefix: /loki
+
+ replication_factor: 1
+
+ ring:
+
+  kvstore:
+
+   store: inmemory
+
+
+
+schema_config:
+
+ configs:
+
+ - from: 2024-01-01
+
+   store: tsdb
+
+   object_store: s3
+
+   schema: v13
+
+   index:
+
+    prefix: index_
+
+    period: 24h
+
+
+
+storage_config:
+
+ aws:
+
+  endpoint: minio:9000
+
+  bucketnames: loki-data
+
+  access_key_id: admin
+
+  secret_access_key: password123
+
+  insecure: true
+
+  s3forcepathstyle: true
+
+
+ tsdb_shipper:
+
+  active_index_directory: /loki/index
+
+  cache_location: /loki/cache
+
+
+
+ingester:
+
+ wal:
+
+  enabled: true
+
+  dir: /loki/wal
+
+
+
+limits_config:
+
+
+ # protect every tenant
+
+ max_streams_per_user: 100
+
+
+ ingestion_rate_mb: 10
+
+
+ ingestion_burst_size_mb: 20

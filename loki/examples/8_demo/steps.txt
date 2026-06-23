@@ -1,0 +1,6 @@
+curl -H "X-Scope-OrgID: tenant-a" \
+localhost:3100/loki/api/v1/labels
+
+curl localhost:3100/metrics \
+| grep loki_ingester_memory_streams
+

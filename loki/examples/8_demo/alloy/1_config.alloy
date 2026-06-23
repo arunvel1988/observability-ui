@@ -1,0 +1,150 @@
+local.file_match "tenant_a" {
+
+  path_targets = [
+    {
+      "__path__" = "/logs-a/app.log",
+    },
+  ]
+
+}
+
+
+
+local.file_match "tenant_b" {
+
+  path_targets = [
+    {
+      "__path__" = "/logs-b/app.log",
+    },
+  ]
+
+}
+
+
+
+loki.source.file "tenant_a_logs" {
+
+  targets = local.file_match.tenant_a.targets
+
+  forward_to = [
+    loki.process.tenant_a.receiver,
+  ]
+
+}
+
+
+
+loki.source.file "tenant_b_logs" {
+
+  targets = local.file_match.tenant_b.targets
+
+  forward_to = [
+    loki.process.tenant_b.receiver,
+  ]
+
+}
+
+
+
+loki.process "tenant_a" {
+
+  stage.json {
+
+    expressions = {
+
+      service = "service"
+
+      event = "event"
+
+    }
+
+  }
+
+
+  stage.labels {
+
+    values = {
+
+      service = ""
+
+      event = ""
+
+    }
+
+  }
+
+
+  forward_to = [
+    loki.write.tenant_a.receiver,
+  ]
+
+}
+
+
+
+
+loki.process "tenant_b" {
+
+
+  stage.json {
+
+    expressions = {
+
+      service = "service"
+
+      event = "event"
+
+      user_id = "user_id"
+
+    }
+
+  }
+
+
+  stage.labels {
+
+    values = {
+
+      service = ""
+
+      event = ""
+
+    }
+
+  }
+
+
+  forward_to = [
+    loki.write.tenant_b.receiver,
+  ]
+
+}
+
+
+
+
+loki.write "tenant_a" {
+
+  endpoint {
+
+    url = "http://loki:3100/loki/api/v1/push"
+
+    tenant_id = "tenant-a"
+
+  }
+
+}
+
+
+
+loki.write "tenant_b" {
+
+  endpoint {
+
+    url = "http://loki:3100/loki/api/v1/push"
+
+    tenant_id = "tenant-b"
+
+  }
+
+}

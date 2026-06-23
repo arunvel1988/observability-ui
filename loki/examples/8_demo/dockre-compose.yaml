@@ -1,0 +1,118 @@
+services:
+
+  app-a:
+    image: python:3.11
+    container_name: tenant-a-app
+    volumes:
+      - ./app-a:/app
+      - logs-a:/logs
+    working_dir: /app
+    command: python app.py
+
+
+  app-b:
+    image: python:3.11
+    container_name: tenant-b-app
+    volumes:
+      - ./app-b:/app
+      - logs-b:/logs
+    working_dir: /app
+    command: python app.py
+
+
+
+  alloy:
+    image: grafana/alloy:latest
+    container_name: alloy
+
+    volumes:
+      - ./alloy/config.alloy:/etc/alloy/config.alloy
+      - logs-a:/logs-a
+      - logs-b:/logs-b
+
+    command:
+      - run
+      - /etc/alloy/config.alloy
+
+    depends_on:
+      - loki
+
+
+
+  loki:
+    image: grafana/loki:3.0.0
+    container_name: loki
+
+    ports:
+      - "3100:3100"
+
+    command:
+      - -config.file=/etc/loki/loki.yaml
+
+    volumes:
+      - ./loki/loki.yaml:/etc/loki/loki.yaml
+      - loki-data:/loki
+
+
+
+  minio:
+
+    image: minio/minio
+
+    container_name: minio
+
+    command: server /data --console-address ":9001"
+
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: password123
+
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+
+    volumes:
+      - minio-data:/data
+
+
+
+  createbucket:
+
+    image: minio/mc
+
+    depends_on:
+      - minio
+
+    entrypoint: >
+      /bin/sh -c "
+      sleep 5;
+      mc alias set local http://minio:9000 admin password123;
+      mc mb -p local/loki-data;
+      exit 0;
+      "
+
+
+
+  grafana:
+
+    image: grafana/grafana
+
+    container_name: grafana
+
+    ports:
+      - "3000:3000"
+
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+
+
+
+volumes:
+  logs-a:
+  logs-b:
+  loki-data:
+  minio-data:
+
