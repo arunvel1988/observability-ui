@@ -4,3 +4,17 @@ localhost:3100/loki/api/v1/labels
 curl localhost:3100/metrics \
 | grep loki_ingester_memory_streams
 
+
+watch -n 2 \
+'curl -s localhost:3100/metrics | grep loki_ingester_memory_streams'
+
+curl -G \
+-H "X-Scope-OrgID: tenant-a" \
+"http://localhost:3100/loki/api/v1/series" \
+--data-urlencode 'match[]={service="checkout"}'
+
+curl -G \
+-H "X-Scope-OrgID: tenant-b" \
+"http://localhost:3100/loki/api/v1/series" \
+--data-urlencode 'match[]={service="checkout"}'
+
