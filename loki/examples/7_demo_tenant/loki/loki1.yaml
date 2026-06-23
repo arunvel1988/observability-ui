@@ -56,6 +56,7 @@ storage_config:
 
 
 
+
 ingester:
 
  chunk_idle_period: 30s
@@ -64,12 +65,20 @@ ingester:
 
  chunk_retain_period: 10s
 
+ wal:
+
+  enabled: true
+
+  dir: /tmp/loki/wal
+
+
 
 
 
 compactor:
 
  working_directory: /tmp/loki/compactor
+
 
 
 
@@ -91,7 +100,7 @@ ruler:
 
 
 
- rule_path: /tmp/rules
+ rule_path: /tmp/loki/rules-temp
 
 
 
@@ -105,12 +114,21 @@ ruler:
 
    mimir:
 
+
     url: http://mimir:9009/api/v1/push
+
+
+    headers:
+
+
+     X-Scope-OrgID: audit
+
 
 
 
 
 
 limits_config:
+
 
  allow_structured_metadata: true
