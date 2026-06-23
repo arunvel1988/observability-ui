@@ -40,8 +40,46 @@ sum(
 
 curl localhost:3100/metrics | grep ruler
 
+curl \
+-H "X-Scope-OrgID: audit" \
+http://localhost:3100/loki/api/v1/rules
+
 curl localhost:3100/metrics \
 | grep remote_write
+
+
+
+
+
+
+curl -G \
+-H "X-Scope-OrgID: audit" \
+"http://localhost:3100/loki/api/v1/query_range" \
+--data-urlencode 'query={job="python-app"}' \
+--data-urlencode 'limit=5'
+
+
+curl \
+-H "X-Scope-OrgID: audit" \
+localhost:3100/loki/api/v1/rules
+
+curl -s localhost:3100/metrics \
+| grep loki_ruler_evaluations
+
+curl -s localhost:3100/metrics \
+| grep loki_ruler_wal_samples_appended_total
+
+curl -G \
+-H "X-Scope-OrgID: audit" \
+"http://localhost:9009/prometheus/api/v1/query" \
+--data-urlencode 'query={__name__=~".+"}'
+
+curl -G \
+-H "X-Scope-OrgID: audit" \
+"http://localhost:9009/prometheus/api/v1/query" \
+--data-urlencode 'query=audit_login_success_total'
+
+
 
 curl -G \
 -H "X-Scope-OrgID: audit" \

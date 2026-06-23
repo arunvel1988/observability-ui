@@ -1,144 +1,106 @@
 auth_enabled: true
 
+target: all
 
 server:
   http_listen_port: 3100
 
 
-
 common:
-
   path_prefix: /tmp/loki
 
   replication_factor: 1
 
   ring:
-
     kvstore:
-
       store: inmemory
 
 
-
-
 schema_config:
-
- configs:
-
- - from: 2024-01-01
-
-   store: tsdb
-
-   object_store: s3
-
-   schema: v13
-
-   index:
-
-     prefix: index_
-
-     period: 24h
-
-
-
+  configs:
+    - from: 2024-01-01
+      store: tsdb
+      object_store: s3
+      schema: v13
+      index:
+        prefix: index_
+        period: 24h
 
 
 storage_config:
-
- aws:
-
-  endpoint: minio:9000
-
-  bucketnames: loki-data
-
-  access_key_id: minio
-
-  secret_access_key: miniopassword
-
-  s3forcepathstyle: true
-
-  insecure: true
-
-
-
+  aws:
+    endpoint: minio:9000
+    bucketnames: loki-data
+    access_key_id: minio
+    secret_access_key: miniopassword
+    s3forcepathstyle: true
+    insecure: true
 
 
 ingester:
+  chunk_idle_period: 30s
+  max_chunk_age: 1m
+  chunk_retain_period: 10s
 
- chunk_idle_period: 30s
-
- max_chunk_age: 1m
-
- chunk_retain_period: 10s
-
-
- wal:
-
-  enabled: true
-
-  dir: /tmp/loki/wal
-
-
-
-
+  wal:
+    enabled: true
+    dir: /tmp/loki/ingester-wal
 
 
 compactor:
-
- working_directory: /tmp/loki/compactor
-
-
-
-
+  working_directory: /tmp/loki/compactor
 
 
 ruler:
 
+  enable_api: true
 
- enable_api: true
+  # important - ruler needs its own WAL
+  wal:
+    dir: /tmp/loki/ruler-wal
 
+  storage:
+    type: local
 
- storage:
-
-  type: local
-
-  local:
-
-   directory: /rules
-
-
-
- rule_path: /tmp/loki/rules-temp
+    local:
+      directory: /rules
 
 
-
- ring:
-
-  kvstore:
-
-   store: inmemory
+  # temporary rule working directory
+  rule_path: /tmp/loki/rules-temp
 
 
-
- remote_write:
-
-  enabled: true
-
-
-  client:
-
-   url: http://mimir:9009/api/v1/push
+  ring:
+    kvstore:
+      store: inmemory
 
 
-   headers:
+  # Send generated metrics to Mimir
+  remote_write:
+    enabled: true
 
-    X-Scope-OrgID: audit
+    client:
+      url: http://mimir:9009/api/v1/push
 
-
-
-
+      headers:
+        X-Scope-OrgID: audit
 
 
 limits_config:
 
- allow_structured_metadata: true
+  allow_structured_metadata: true
+
+  # required for ruler remote write
+  ruler_remote_write_disabled: false
+
+
+query_range:
+  results_cache:
+    cache:
+      embedded_cache:
+        enabled: true
+        max_size_mb: 100
+
+
+frontend:
+  encoding: protobuf
