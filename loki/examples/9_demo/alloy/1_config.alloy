@@ -1,0 +1,67 @@
+local.file_match "app" {
+
+  path_targets = [
+    {
+      "__path__" = "/logs/app.log",
+    },
+  ]
+
+}
+
+
+
+loki.source.file "logs" {
+
+  targets = local.file_match.app.targets
+
+  forward_to = [
+    loki.process.parser.receiver,
+  ]
+
+}
+
+
+
+loki.process "parser" {
+
+
+  stage.regex {
+
+    expression = "\\{ service (?P<service>\\w+) event (?P<event>\\w+)"
+
+  }
+
+
+
+  stage.labels {
+
+    values = {
+
+      service = "",
+
+      event = "",
+
+    }
+
+  }
+
+
+
+  forward_to = [
+    loki.write.default.receiver,
+  ]
+
+}
+
+
+
+
+loki.write "default" {
+
+  endpoint {
+
+    url = "http://loki:3100/loki/api/v1/push"
+
+  }
+
+}

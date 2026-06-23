@@ -1,0 +1,1 @@
+curl localhost:3100/loki/api/v1/labels
