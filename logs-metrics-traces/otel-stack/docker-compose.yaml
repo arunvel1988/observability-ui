@@ -1,26 +1,18 @@
 version: "3.8"
 
-
 services:
-
 
   # ==========================
   # Flask Application
   # ==========================
-
   flask-app:
-
     image: python:3.11
-
     container_name: flask-app
 
     working_dir: /app
 
-
     volumes:
-
       - ./:/app
-
 
     command: >
       sh -c "
@@ -28,264 +20,186 @@ services:
       python app.py
       "
 
-
     ports:
-
       - "5000:5000"
 
-
     depends_on:
-
       - alloy
-
-
-
 
 
   # ==========================
   # Grafana Alloy
   # OTEL Collector
   # ==========================
-
-
   alloy:
-
     image: grafana/alloy:latest
-
     container_name: alloy
 
-
     command:
-
       - run
-
       - /etc/alloy/config.alloy
 
-
     volumes:
-
       - ./alloy/config.alloy:/etc/alloy/config.alloy
 
-
     ports:
-
       - "4317:4317"
-
       - "4318:4318"
-
-
-
 
 
   # ==========================
   # Prometheus
-  # short term metrics
+  # Short term metrics
   # ==========================
-
-
   prometheus:
-
     image: prom/prometheus:latest
-
     container_name: prometheus
 
-
     command:
-
       - "--config.file=/etc/prometheus/prometheus.yml"
-
       - "--web.enable-remote-write-receiver"
 
-
     volumes:
-
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
 
-
     ports:
-
       - "9090:9090"
-
-
-
-
-
-  # ==========================
-  # Mimir
-  # long term metrics
-  # ==========================
-
-
-  mimir:
-
-    image: grafana/mimir:latest
-
-    container_name: mimir
-
-
-    command:
-
-      - "-config.file=/etc/mimir/mimir.yaml"
-
-
-    volumes:
-
-      - ./mimir/mimir.yaml:/etc/mimir/mimir.yaml
-
-
-    ports:
-
-      - "9009:9009"
-
-
-    depends_on:
-
-      - minio
-
-
-
 
 
   # ==========================
   # MinIO
-  # S3 backend for Mimir
+  # S3 Object Storage
   # ==========================
-
-
   minio:
-
     image: minio/minio:latest
-
     container_name: minio
 
-
     command:
-
       server /data --console-address ":9001"
 
-
     environment:
-
       MINIO_ROOT_USER: admin
-
       MINIO_ROOT_PASSWORD: password123
 
-
     volumes:
-
       - minio-data:/data
 
-
     ports:
-
       - "9000:9000"
-
       - "9001:9001"
 
 
+  # ==========================
+  # Create MinIO buckets
+  # Needed by Mimir
+  # ==========================
+  createbuckets:
+    image: minio/mc:latest
+    container_name: createbuckets
 
+    depends_on:
+      - minio
+
+    entrypoint: >
+      /bin/sh -c "
+      echo Waiting for MinIO;
+
+      sleep 10;
+
+      mc alias set myminio http://minio:9000 admin password123;
+
+      mc mb -p myminio/mimir-blocks;
+
+      mc mb -p myminio/mimir-ruler;
+
+      mc mb -p myminio/mimir-alertmanager;
+
+      mc ls myminio;
+
+      echo MinIO buckets ready;
+
+      exit 0;
+      "
+
+
+  # ==========================
+  # Mimir
+  # Long term metrics storage
+  # ==========================
+  mimir:
+    image: grafana/mimir:latest
+    container_name: mimir
+
+    command:
+      - "-config.file=/etc/mimir/mimir.yaml"
+
+    volumes:
+      - ./mimir/mimir.yaml:/etc/mimir/mimir.yaml
+
+    ports:
+      - "9009:9009"
+
+    depends_on:
+      - createbuckets
 
 
   # ==========================
   # Loki
   # Logs backend
   # ==========================
-
-
   loki:
-
     image: grafana/loki:latest
-
     container_name: loki
 
-
     command:
-
       - "-config.file=/etc/loki/loki.yaml"
 
-
     volumes:
-
       - ./loki/loki.yaml:/etc/loki/loki.yaml
 
-
     ports:
-
       - "3100:3100"
-
-
-
 
 
   # ==========================
   # Tempo
-  # Tracing backend
+  # Trace backend
   # ==========================
-
-
   tempo:
-
     image: grafana/tempo:latest
-
     container_name: tempo
 
-
     command:
-
       - "-config.file=/etc/tempo/tempo.yaml"
       - "-target=all"
 
-
-
     volumes:
-
       - ./tempo/tempo.yaml:/etc/tempo/tempo.yaml
 
-
     ports:
-
       - "3200:3200"
-
       - "4319:4317"
-
-
-
 
 
   # ==========================
   # Grafana
-  # Visualization
+  # Dashboard
   # ==========================
-
-
   grafana:
-
     image: grafana/grafana:latest
-
     container_name: grafana
 
-
     ports:
-
       - "3000:3000"
 
-
     volumes:
-
       - ./grafana/provisioning:/etc/grafana/provisioning
 
-
     depends_on:
-
       - prometheus
-
       - mimir
-
       - loki
-
       - tempo
-
-
 
 
 volumes:
