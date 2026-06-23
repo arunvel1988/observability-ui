@@ -1,0 +1,38 @@
+###########################################
+{job="python-app"}
+
+
+count_over_time(
+ {job="python-app"} 
+ |= "LOGIN_SUCCESS"
+ [1m]
+)
+
+sum by(user)
+(
+ count_over_time(
+  {job="python-app"}
+  |= "LOGIN_SUCCESS"
+  | regexp "user=(?P<user>[a-zA-Z0-9]+)"
+  [5m]
+ )
+)
+###########################################
+sum by(user)
+(
+ count_over_time(
+  {job="python-app"}
+  |= "PAYMENT_COMPLETED"
+  | regexp "user=(?P<user>[a-zA-Z0-9]+)"
+  [5m]
+ )
+)
+#############################################################################
+sum(
+ count_over_time(
+  {job="python-app"}
+  |= "APP_FAILURE"
+  [5m]
+ )
+)
+
