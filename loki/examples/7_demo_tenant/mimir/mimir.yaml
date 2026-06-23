@@ -1,0 +1,71 @@
+target: all
+
+
+server:
+
+ http_listen_port: 9009
+
+
+
+common:
+
+ storage:
+
+  backend: filesystem
+
+  filesystem:
+
+   dir: /data
+
+
+
+
+blocks_storage:
+
+ backend: filesystem
+
+ filesystem:
+
+  dir: /data/blocks
+
+
+
+
+compactor:
+
+ data_dir: /data/compactor
+
+
+
+
+distributor:
+
+ ring:
+
+  kvstore:
+
+   store: inmemory
+
+
+
+
+ingester:
+
+ ring:
+
+  replication_factor: 1
+
+  kvstore:
+
+   store: inmemory
+
+
+
+
+ruler_storage:
+
+ backend: filesystem
+
+ filesystem:
+
+  dir: /data/rules

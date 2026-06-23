@@ -1,0 +1,39 @@
+groups:
+
+- name: audit_metrics
+
+  interval: 30s
+
+
+  rules:
+
+
+  - record: login_success_total_by_user
+
+    expr: |
+
+      sum by(user)
+      (
+       count_over_time(
+        {job="python-app"}
+        |= "LOGIN_SUCCESS"
+        | regexp "user=(?P<user>[a-zA-Z0-9]+)"
+        [1m]
+       )
+      )
+
+
+
+  - record: payment_total_by_user
+
+    expr: |
+
+      sum by(user)
+      (
+       count_over_time(
+        {job="python-app"}
+        |= "PAYMENT_COMPLETED"
+        | regexp "user=(?P<user>[a-zA-Z0-9]+)"
+        [1m]
+       )
+      )
