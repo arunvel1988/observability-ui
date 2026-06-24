@@ -1,0 +1,466 @@
+
+
+=====================================================
+1. SHOW ALL TRACES
+=====================================================
+
+{}
+
+
+
+
+
+=====================================================
+2. FIND AUTHENTICATE SERVICE TRACES
+=====================================================
+
+{
+ resource.service.name="authenticate"
+}
+
+
+Example:
+
+User login request
+
+client
+   |
+   v
+authenticate
+
+
+
+
+
+
+=====================================================
+3. FIND SLOW AUTHENTICATION REQUESTS
+=====================================================
+
+{
+ resource.service.name="authenticate"
+ &&
+ duration > 500ms
+}
+
+
+Your graph:
+
+authenticate
+p90 duration = 501ms
+
+
+Use this to find slow login traces.
+
+
+
+
+
+=====================================================
+4. FIND AUTHENTICATION ERRORS
+=====================================================
+
+{
+ resource.service.name="authenticate"
+ &&
+ status=error
+}
+
+
+Use case:
+
+Login failures
+
+wrong password
+
+token failure
+
+database failure
+
+
+
+
+
+=====================================================
+5. FIND LIST ARTICLES API
+=====================================================
+
+{
+ resource.service.name="list-articles"
+}
+
+
+
+Your graph:
+
+list-articles
+
+rate:
+0.013 req/sec
+
+p90:
+755ms
+
+
+
+
+
+=====================================================
+6. FIND SLOW ARTICLE LIST REQUESTS
+=====================================================
+
+
+{
+ resource.service.name="list-articles"
+ &&
+ duration > 700ms
+}
+
+
+Find why article listing is slow.
+
+
+
+
+
+=====================================================
+7. FIND QUERY ARTICLES
+=====================================================
+
+
+{
+ resource.service.name="query-articles"
+}
+
+
+
+Your graph:
+
+query-articles
+
+p90:
+255ms
+
+
+
+
+
+=====================================================
+8. FIND SEARCH ORDER TRACES
+=====================================================
+
+
+{
+ resource.service.name="search-order"
+}
+
+
+
+Your graph:
+
+search-order
+
+p90:
+753ms
+
+
+
+
+
+=====================================================
+9. TROUBLESHOOT SLOW ORDER SEARCH
+=====================================================
+
+
+{
+ resource.service.name="search-order"
+ &&
+ duration > 700ms
+}
+
+
+
+Find:
+
+database delay
+
+external API delay
+
+slow dependency
+
+
+
+
+
+=====================================================
+10. FIND OTEL COLLECTOR EXPORT TRACES
+=====================================================
+
+
+{
+ name =
+"opentelemetry.proto.collector.trace.v1.TraceService/Export"
+}
+
+
+
+Meaning:
+
+
+Application
+
+     |
+     v
+
+OTel Export
+
+     |
+     v
+
+Tempo Distributor
+
+
+
+
+
+=====================================================
+11. FIND HIGH LATENCY ANY SERVICE
+=====================================================
+
+
+{
+ duration > 1s
+}
+
+
+
+Find worst traces.
+
+
+
+
+
+=====================================================
+12. FIND ALL ERRORS
+=====================================================
+
+
+{
+ status=error
+}
+
+
+
+
+
+
+=====================================================
+13. AUTHENTICATE CALLING ANOTHER SERVICE
+=====================================================
+
+
+{
+ resource.service.name="authenticate"
+}
+
+>>
+
+{
+ resource.service.name="search-order"
+}
+
+
+
+Meaning:
+
+
+authenticate
+
+      |
+      |
+      v
+
+search-order
+
+
+
+
+
+
+=====================================================
+14. ARTICLE SERVICE FLOW
+=====================================================
+
+
+{
+ resource.service.name="query-articles"
+}
+
+>>
+
+{
+ resource.service.name="list-articles"
+}
+
+
+
+
+
+=====================================================
+15. FIND HTTP 500 ERRORS
+=====================================================
+
+
+{
+ http.status_code=500
+}
+
+
+
+
+
+=====================================================
+16. FIND SLOW HTTP REQUESTS
+=====================================================
+
+
+{
+ http.status_code >= 200
+ &&
+ duration > 500ms
+}
+
+
+
+
+
+
+=====================================================
+17. RATE FROM TRACEQL METRICS
+=====================================================
+
+
+rate(
+ {
+  resource.service.name="authenticate"
+ }
+)
+
+
+
+Result:
+
+
+authenticate requests/sec
+
+
+
+
+
+=====================================================
+18. ERROR RATE
+=====================================================
+
+
+rate(
+ {
+  resource.service.name="authenticate"
+  &&
+  status=error
+ }
+)
+
+
+
+
+
+
+=====================================================
+19. LATENCY HISTOGRAM
+=====================================================
+
+
+histogram(
+ {
+  resource.service.name="search-order"
+ }
+)
+
+
+
+
+
+=====================================================
+20. FIND SERVICE GRAPH ROOT CAUSE
+=====================================================
+
+
+Problem:
+
+search-order latency high
+
+
+Step 1:
+
+
+{
+ resource.service.name="search-order"
+}
+
+
+
+Step 2:
+
+
+Open trace waterfall
+
+
+Example:
+
+
+search-order
+
+   |
+   +---- database 600ms
+
+   |
+   +---- cache 10ms
+
+
+
+Root cause:
+
+database span
+
+
+
+
+
+=====================================================
+YOUR CURRENT SERVICE HEALTH
+=====================================================
+
+
+Service                 p90
+
+authenticate            501 ms
+
+list-articles           755 ms
+
+query-articles          255 ms
+
+search-order            753 ms
+
+
+
+Investigate:
+
+
+list-articles
+
+search-order
+
+
+because highest latency.
+
+=====================================================
