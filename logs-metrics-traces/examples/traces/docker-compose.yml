@@ -1,265 +1,158 @@
-
 services:
 
-
- minio:
-
-  image: minio/minio
-
-  container_name: minio
-
-  command: server /data --console-address ":9001"
-
-  environment:
-
-   MINIO_ROOT_USER: admin
-
-   MINIO_ROOT_PASSWORD: password123
-
-  ports:
-
-  - "9000:9000"
-
-  - "9001:9001"
-
-
-
- createbucket:
-
-  image: minio/mc
-
-  depends_on:
-
-  - minio
-
-  entrypoint: >
-
-   /bin/sh -c "
-
-   sleep 5;
-
-   mc alias set local http://minio:9000 admin password123;
-
-   mc mb local/tempo-data;
-
-   exit 0;
-
-   "
-
-
-
-
- tempo:
-
-  image: grafana/tempo:latest
-
-  container_name: tempo
-
-  command:
-
-  - -config.file=/etc/tempo.yaml
-
-  volumes:
-
-  - ./tempo.yaml:/etc/tempo.yaml
-
-  ports:
-
-  - "3200:3200"
-
-  - "4317"
-
-  depends_on:
-
-  - createbucket
-
-
-
-
- alloy:
-
-  image: grafana/alloy:latest
-
-  container_name: alloy
-
-
-  volumes:
-
-  - ./config.alloy:/etc/alloy/config.alloy
-
-
-  command:
-
-  - run
-
-  - /etc/alloy/config.alloy
-
-
-  ports:
-
-  - "4317:4317"
-
-  - "4318:4318"
-
-
-
-
- frontend:
-
-  image: python:3.11
-
-  container_name: frontend
-
-  volumes:
-
-  - ./:/app
-
-  working_dir: /app
-
-
-  environment:
-
-   OTEL_SERVICE_NAME: frontend
-
-   OTEL_EXPORTER_OTLP_ENDPOINT: http://alloy:4317
-
-   OTEL_EXPORTER_OTLP_INSECURE: "true"
-
-
-  command: >
-
-   sh -c "
-
-   pip install -r requirements.txt &&
-   opentelemetry-instrument python frontend.py
-
-   "
-
-  ports:
-
-  - "5000:5000"
-
-
-
-
-
- cart:
-
-  image: python:3.11
-
-  container_name: cart
-
-  volumes:
-
-  - ./:/app
-
-  working_dir: /app
-
-
-  environment:
-
-   OTEL_SERVICE_NAME: cart
-
-   OTEL_EXPORTER_OTLP_ENDPOINT: http://alloy:4317
-
-   OTEL_EXPORTER_OTLP_INSECURE: "true"
-
-
-  command: >
-
-   sh -c "
-
-   pip install -r requirements.txt &&
-   opentelemetry-instrument python cart.py
-
-   "
-
-
-
-
-
- inventory:
-
-  image: python:3.11
-
-  container_name: inventory
-
-  volumes:
-
-  - ./:/app
-
-  working_dir: /app
-
-
-  environment:
-
-   OTEL_SERVICE_NAME: inventory
-
-   OTEL_EXPORTER_OTLP_ENDPOINT: http://alloy:4317
-
-   OTEL_EXPORTER_OTLP_INSECURE: "true"
-
-
-  command: >
-
-   sh -c "
-
-   pip install -r requirements.txt &&
-   opentelemetry-instrument python inventory.py
-
-   "
-
-
-
-
- payment:
-
-  image: python:3.11
-
-  container_name: payment
-
-  volumes:
-
-  - ./:/app
-
-  working_dir: /app
-
-
-  environment:
-
-   OTEL_SERVICE_NAME: payment
-
-   OTEL_EXPORTER_OTLP_ENDPOINT: http://alloy:4317
-
-   OTEL_EXPORTER_OTLP_INSECURE: "true"
-
-
-  command: >
-
-   sh -c "
-
-   pip install -r requirements.txt &&
-   opentelemetry-instrument python payment.py
-
-   "
-
-
-
-
- grafana:
-
-  image: grafana/grafana
-
-  container_name: grafana
-
-
-  ports:
-
-  - "3000:3000"
-
-
-  volumes:
-
-  - ./provisioning:/etc/grafana/provisioning
+  minio:
+    image: minio/minio
+    container_name: minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: password123
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+
+
+  createbucket:
+    image: minio/mc
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      sleep 5;
+      mc alias set local http://minio:9000 admin password123;
+      mc mb -p local/tempo-data;
+      exit 0;
+      "
+
+
+  tempo:
+    image: grafana/tempo:latest
+    container_name: tempo
+    command:
+      - "-target=all"
+      - "-config.file=/etc/tempo.yaml"
+    volumes:
+      - ./tempo.yaml:/etc/tempo.yaml
+    ports:
+      - "3200:3200"
+      - "4319:4317"
+    depends_on:
+      - createbucket
+
+
+  alloy:
+    image: grafana/alloy:latest
+    container_name: alloy
+    command:
+      - run
+      - /etc/alloy/config.alloy
+    volumes:
+      - ./config.alloy:/etc/alloy/config.alloy
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+      - "12345:12345"
+
+
+  frontend:
+    image: python:3.11
+    container_name: frontend
+    working_dir: /app
+    volumes:
+      - ./:/app
+    environment:
+      OTEL_SERVICE_NAME: frontend
+      OTEL_TRACES_EXPORTER: otlp
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://alloy:4317
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
+      OTEL_EXPORTER_OTLP_INSECURE: "true"
+    command: >
+      sh -c "
+      pip install -r requirements.txt &&
+      opentelemetry-bootstrap -a install &&
+      opentelemetry-instrument python frontend.py
+      "
+    ports:
+      - "5000:5000"
+    depends_on:
+      - alloy
+
+
+  cart:
+    image: python:3.11
+    container_name: cart
+    working_dir: /app
+    volumes:
+      - ./:/app
+    environment:
+      OTEL_SERVICE_NAME: cart
+      OTEL_TRACES_EXPORTER: otlp
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://alloy:4317
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
+      OTEL_EXPORTER_OTLP_INSECURE: "true"
+    command: >
+      sh -c "
+      pip install -r requirements.txt &&
+      opentelemetry-bootstrap -a install &&
+      opentelemetry-instrument python cart.py
+      "
+    depends_on:
+      - alloy
+
+
+  inventory:
+    image: python:3.11
+    container_name: inventory
+    working_dir: /app
+    volumes:
+      - ./:/app
+    environment:
+      OTEL_SERVICE_NAME: inventory
+      OTEL_TRACES_EXPORTER: otlp
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://alloy:4317
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
+      OTEL_EXPORTER_OTLP_INSECURE: "true"
+    command: >
+      sh -c "
+      pip install -r requirements.txt &&
+      opentelemetry-bootstrap -a install &&
+      opentelemetry-instrument python inventory.py
+      "
+    depends_on:
+      - alloy
+
+
+  payment:
+    image: python:3.11
+    container_name: payment
+    working_dir: /app
+    volumes:
+      - ./:/app
+    environment:
+      OTEL_SERVICE_NAME: payment
+      OTEL_TRACES_EXPORTER: otlp
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://alloy:4317
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
+      OTEL_EXPORTER_OTLP_INSECURE: "true"
+    command: >
+      sh -c "
+      pip install -r requirements.txt &&
+      opentelemetry-bootstrap -a install &&
+      opentelemetry-instrument python payment.py
+      "
+    depends_on:
+      - alloy
+
+
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./provisioning:/etc/grafana/provisioning
+    depends_on:
+      - tempo
 
 
