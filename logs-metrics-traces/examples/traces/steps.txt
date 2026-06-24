@@ -19,3 +19,9 @@ $(. /etc/os-release && echo "$VERSION_CODENAME") stable" \
 sudo apt update
 
 sudo apt install -y docker-compose-plugin
+
+
+
+git clone https://github.com/arunvel1988/oltp
+
+docker compose up -d
