@@ -1,0 +1,87 @@
+version: "3.8"
+
+
+services:
+
+
+  python-app:
+    build: ./app
+    container_name: python-app
+    ports:
+      - "5000:5000"
+
+    environment:
+
+      OTEL_SERVICE_NAME: python-profile-app
+
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://alloy:4317
+
+      PYROSCOPE_SERVER_ADDRESS: http://pyroscope:4040
+
+    depends_on:
+      - alloy
+      - pyroscope
+
+
+
+  alloy:
+    image: grafana/alloy:latest
+
+    container_name: alloy
+
+    command:
+      - run
+      - /etc/alloy/config.alloy
+
+    volumes:
+      - ./alloy/config.alloy:/etc/alloy/config.alloy
+
+    ports:
+      - "12345:12345"
+      - "4317:4317"
+
+
+
+
+  tempo:
+
+    image: grafana/tempo:latest
+
+    container_name: tempo
+
+    command:
+      - "-config.file=/etc/tempo.yaml"
+
+    volumes:
+      - ./tempo.yaml:/etc/tempo.yaml
+
+    ports:
+      - "3200:3200"
+
+
+
+
+  pyroscope:
+
+    image: grafana/pyroscope:latest
+
+    container_name: pyroscope
+
+    ports:
+      - "4040:4040"
+
+
+
+
+
+  grafana:
+
+    image: grafana/grafana:latest
+
+    container_name: grafana
+
+    ports:
+      - "3000:3000"
+
+    volumes:
+      - ./grafana:/etc/grafana/provisioning/datasources
