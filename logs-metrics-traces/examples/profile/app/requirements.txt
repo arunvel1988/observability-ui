@@ -1,0 +1,15 @@
+flask
+
+
+opentelemetry-sdk
+
+opentelemetry-api
+
+
+opentelemetry-instrumentation-flask
+
+
+opentelemetry-exporter-otlp
+
+
+pyroscope-io
