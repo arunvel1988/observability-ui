@@ -25,3 +25,7 @@ sudo apt install -y docker-compose-plugin
 git clone https://github.com/arunvel1988/oltp
 
 docker compose up -d
+
+
+git clone https://github.com/arunvel1988/tempo-otel-example
+docker compose up -d
