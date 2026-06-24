@@ -1,8 +1,6 @@
 
-
-=====================================================
-1. SHOW ALL TRACES
-=====================================================
+1. ALL TRACES
+----------------------------------------------------
 
 {}
 
@@ -10,242 +8,49 @@
 
 
 
-=====================================================
-2. FIND AUTHENTICATE SERVICE TRACES
-=====================================================
+2. ALL SHOP BACKEND TRACES
+----------------------------------------------------
 
 {
- resource.service.name="authenticate"
+ resource.service.name="shop-backend"
 }
 
 
-Example:
-
-User login request
-
-client
-   |
-   v
-authenticate
 
 
 
-
-
-
-=====================================================
-3. FIND SLOW AUTHENTICATION REQUESTS
-=====================================================
+3. SLOW SHOP BACKEND REQUESTS
+----------------------------------------------------
 
 {
- resource.service.name="authenticate"
+ resource.service.name="shop-backend"
  &&
  duration > 500ms
 }
 
 
-Your graph:
-
-authenticate
-p90 duration = 501ms
-
-
-Use this to find slow login traces.
 
 
 
-
-
-=====================================================
-4. FIND AUTHENTICATION ERRORS
-=====================================================
+4. VERY SLOW SHOP BACKEND REQUESTS
+----------------------------------------------------
 
 {
- resource.service.name="authenticate"
+ resource.service.name="shop-backend"
  &&
- status=error
-}
-
-
-Use case:
-
-Login failures
-
-wrong password
-
-token failure
-
-database failure
-
-
-
-
-
-=====================================================
-5. FIND LIST ARTICLES API
-=====================================================
-
-{
- resource.service.name="list-articles"
-}
-
-
-
-Your graph:
-
-list-articles
-
-rate:
-0.013 req/sec
-
-p90:
-755ms
-
-
-
-
-
-=====================================================
-6. FIND SLOW ARTICLE LIST REQUESTS
-=====================================================
-
-
-{
- resource.service.name="list-articles"
- &&
- duration > 700ms
-}
-
-
-Find why article listing is slow.
-
-
-
-
-
-=====================================================
-7. FIND QUERY ARTICLES
-=====================================================
-
-
-{
- resource.service.name="query-articles"
-}
-
-
-
-Your graph:
-
-query-articles
-
-p90:
-255ms
-
-
-
-
-
-=====================================================
-8. FIND SEARCH ORDER TRACES
-=====================================================
-
-
-{
- resource.service.name="search-order"
-}
-
-
-
-Your graph:
-
-search-order
-
-p90:
-753ms
-
-
-
-
-
-=====================================================
-9. TROUBLESHOOT SLOW ORDER SEARCH
-=====================================================
-
-
-{
- resource.service.name="search-order"
- &&
- duration > 700ms
-}
-
-
-
-Find:
-
-database delay
-
-external API delay
-
-slow dependency
-
-
-
-
-
-=====================================================
-10. FIND OTEL COLLECTOR EXPORT TRACES
-=====================================================
-
-
-{
- name =
-"opentelemetry.proto.collector.trace.v1.TraceService/Export"
-}
-
-
-
-Meaning:
-
-
-Application
-
-     |
-     v
-
-OTel Export
-
-     |
-     v
-
-Tempo Distributor
-
-
-
-
-
-=====================================================
-11. FIND HIGH LATENCY ANY SERVICE
-=====================================================
-
-
-{
  duration > 1s
 }
 
 
 
-Find worst traces.
 
 
-
-
-
-=====================================================
-12. FIND ALL ERRORS
-=====================================================
-
+5. SHOP BACKEND ERRORS
+----------------------------------------------------
 
 {
+ resource.service.name="shop-backend"
+ &&
  status=error
 }
 
@@ -253,79 +58,45 @@ Find worst traces.
 
 
 
-
-=====================================================
-13. AUTHENTICATE CALLING ANOTHER SERVICE
-=====================================================
-
+6. SUCCESSFUL REQUESTS
+----------------------------------------------------
 
 {
- resource.service.name="authenticate"
-}
-
->>
-
-{
- resource.service.name="search-order"
+ resource.service.name="shop-backend"
+ &&
+ status=ok
 }
 
 
 
-Meaning:
 
+
+7. AUTHENTICATE OPERATION
+----------------------------------------------------
+
+{
+ resource.service.name="shop-backend"
+ &&
+ name="authenticate"
+}
+
+
+Your graph:
 
 authenticate
-
-      |
-      |
-      v
-
-search-order
+p90 around 501ms
 
 
 
 
 
-
-=====================================================
-14. ARTICLE SERVICE FLOW
-=====================================================
-
+8. SLOW AUTHENTICATION
+----------------------------------------------------
 
 {
- resource.service.name="query-articles"
-}
-
->>
-
-{
- resource.service.name="list-articles"
-}
-
-
-
-
-
-=====================================================
-15. FIND HTTP 500 ERRORS
-=====================================================
-
-
-{
- http.status_code=500
-}
-
-
-
-
-
-=====================================================
-16. FIND SLOW HTTP REQUESTS
-=====================================================
-
-
-{
- http.status_code >= 200
+ resource.service.name="shop-backend"
+ &&
+ name="authenticate"
  &&
  duration > 500ms
 }
@@ -334,37 +105,169 @@ search-order
 
 
 
+9. LIST ARTICLES OPERATION
+----------------------------------------------------
 
-=====================================================
-17. RATE FROM TRACEQL METRICS
-=====================================================
+{
+ resource.service.name="shop-backend"
+ &&
+ name="list-articles"
+}
 
+
+
+
+
+10. SLOW LIST ARTICLES
+----------------------------------------------------
+
+{
+ resource.service.name="shop-backend"
+ &&
+ name="list-articles"
+ &&
+ duration > 700ms
+}
+
+
+Your graph:
+
+list-articles
+p90 around 755ms
+
+
+
+
+
+11. QUERY ARTICLES
+----------------------------------------------------
+
+{
+ resource.service.name="shop-backend"
+ &&
+ name="query-articles"
+}
+
+
+
+
+
+12. SLOW QUERY ARTICLES
+----------------------------------------------------
+
+{
+ resource.service.name="shop-backend"
+ &&
+ name="query-articles"
+ &&
+ duration > 250ms
+}
+
+
+
+
+
+13. SEARCH ORDER
+----------------------------------------------------
+
+{
+ resource.service.name="shop-backend"
+ &&
+ name="search-order"
+}
+
+
+
+
+
+14. SLOW SEARCH ORDER
+----------------------------------------------------
+
+{
+ resource.service.name="shop-backend"
+ &&
+ name="search-order"
+ &&
+ duration > 700ms
+}
+
+
+Your graph:
+
+search-order
+p90 around 753ms
+
+
+
+
+
+15. FIND HIGHEST LATENCY SPANS
+----------------------------------------------------
+
+{
+ resource.service.name="shop-backend"
+}
+| sort(duration desc)
+
+
+
+
+
+16. COUNT SHOP BACKEND TRACES
+----------------------------------------------------
+
+{
+ resource.service.name="shop-backend"
+}
+| count()
+
+
+
+
+
+17. AVERAGE DURATION
+----------------------------------------------------
+
+{
+ resource.service.name="shop-backend"
+}
+| avg(duration)
+
+
+
+
+
+18. MAX LATENCY
+----------------------------------------------------
+
+{
+ resource.service.name="shop-backend"
+}
+| max(duration)
+
+
+
+
+
+19. REQUEST RATE
+----------------------------------------------------
 
 rate(
  {
-  resource.service.name="authenticate"
+  resource.service.name="shop-backend"
  }
 )
 
 
 
-Result:
 
 
-authenticate requests/sec
-
-
-
-
-
-=====================================================
-18. ERROR RATE
-=====================================================
-
+20. ERROR RATE
+----------------------------------------------------
 
 rate(
  {
-  resource.service.name="authenticate"
+  resource.service.name="shop-backend"
   &&
   status=error
  }
@@ -374,15 +277,12 @@ rate(
 
 
 
-
-=====================================================
-19. LATENCY HISTOGRAM
-=====================================================
-
+21. LATENCY HISTOGRAM
+----------------------------------------------------
 
 histogram(
  {
-  resource.service.name="search-order"
+  resource.service.name="shop-backend"
  }
 )
 
@@ -390,77 +290,67 @@ histogram(
 
 
 
-=====================================================
-20. FIND SERVICE GRAPH ROOT CAUSE
-=====================================================
+22. SERVICE RELATIONSHIP QUERY
+----------------------------------------------------
 
-
-Problem:
-
-search-order latency high
-
-
-Step 1:
+authenticate calling another span:
 
 
 {
- resource.service.name="search-order"
+ name="authenticate"
+}
+
+>>
+
+{
+ resource.service.name="shop-backend"
 }
 
 
 
-Step 2:
 
 
-Open trace waterfall
+23. FIND ANY OPERATION TAKING MORE THAN 2 SECONDS
+----------------------------------------------------
 
-
-Example:
-
-
-search-order
-
-   |
-   +---- database 600ms
-
-   |
-   +---- cache 10ms
-
-
-
-Root cause:
-
-database span
+{
+ resource.service.name="shop-backend"
+ &&
+ duration > 2s
+}
 
 
 
 
 
-=====================================================
-YOUR CURRENT SERVICE HEALTH
-=====================================================
+24. FIND ROOT CAUSE QUERY
+----------------------------------------------------
+
+Start:
 
 
-Service                 p90
-
-authenticate            501 ms
-
-list-articles           755 ms
-
-query-articles          255 ms
-
-search-order            753 ms
+{
+ resource.service.name="shop-backend"
+ &&
+ duration > 500ms
+}
 
 
-
-Investigate:
-
-
-list-articles
-
-search-order
+Then open trace waterfall:
 
 
-because highest latency.
+shop-backend
 
-=====================================================
+    |
+    +-- authenticate 501ms
+
+    |
+    +-- list-articles 755ms
+
+    |
+    +-- search-order 753ms
+
+
+Find slow span.
+
+====================================================
