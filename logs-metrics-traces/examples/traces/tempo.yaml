@@ -1,63 +1,51 @@
-
-
 server:
-
- http_listen_port: 3200
-
+  http_listen_port: 3200
 
 
 distributor:
-
- receivers:
-
-  otlp:
-
-   protocols:
-
-    grpc:
-
-    http:
-
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+          endpoint: 0.0.0.0:4317
+        http:
+          endpoint: 0.0.0.0:4318
 
 
 ingester:
-
- trace_idle_period: 10s
-
- max_block_duration: 1m
-
+  trace_idle_period: 10s
+  max_block_duration: 1m
 
 
 compactor:
-
- compaction:
-
-  block_retention: 24h
-
+  compaction:
+    block_retention: 24h
 
 
 storage:
+  trace:
+    backend: s3
 
- trace:
+    wal:
+      path: /tmp/tempo/wal
 
-  backend: s3
-
-
-  s3:
-
-   bucket: tempo-data
-
-   endpoint: minio:9000
-
-   access_key: admin
-
-   secret_key: password123
-
-   insecure: true
+    s3:
+      bucket: tempo-data
+      endpoint: minio:9000
+      access_key: admin
+      secret_key: password123
+      insecure: true
 
 
-  wal:
+querier:
+  frontend_worker:
+    frontend_address: tempo:9095
 
-   path: /tmp/tempo/wal
 
+query_frontend:
+
+
+metrics_generator:
+  storage:
+    path: /tmp/tempo/generator/wal
 
