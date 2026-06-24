@@ -1,3 +1,7 @@
+helm repo add grafana-community https://grafana-community.github.io/helm-charts
+helm repo update
+helm install tempo grafana-community/tempo-distributed
+
 
 1. ALL TRACES
 ----------------------------------------------------
