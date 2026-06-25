@@ -15,6 +15,9 @@ storage:
     backend: local
     local:
       path: /tmp/tempo/blocks
-
     wal:
       path: /tmp/tempo/wal
+
+query_frontend:
+  mcp_server:
+    enabled: true
