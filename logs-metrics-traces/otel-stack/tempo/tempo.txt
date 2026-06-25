@@ -1,2 +1,38 @@
 curl -i http://localhost:3200/api/mcp
 
+curl -i https://c41859dbdad9-10-244-6-211-3200.saci.r.killercoda.com/api/mcp
+
+python3 -m venv otel-env
+source otel-env/bin/activate
+pip install otel-cli
+
+
+curl -fsSL https://ollama.com/install.sh | sh
+
+ollama pull qwen2.5-coder
+
+sudo apt update && sudo apt install -y python3-pip python3-venv
+pip install --upgrade ollmcp
+
+ollmcp mcp remove tempo --scope local
+
+ollmcp -u https://c41859dbdad9-10-244-6-211-3200.saci.r.killercoda.com/api/mcp
+ollmcp
+ollama pull qwen2.5-coder:1.5b
+
+sudo systemctl restart ollama
+
+curl -G "https://c41859dbdad9-10-244-6-211-3200.saci.r.killercoda.com/api/search" \
+  --data-urlencode "q={}" \
+  --data-urlencode "limit=5"
+
+
+sudo systemctl stop ollama
+
+OLLAMA_NUM_PARALLEL=1 OLLAMA_FLASH_ATTENTION=0 OLLAMA_GPU_OVERHEAD=0 OLLAMA_INTEL_AMX=0 ollama serve
+
+sudo systemctl start ollama
+
+pip install mcp-cli
+mcp-cli --url https://c41859dbdad9-10-244-6-211-3200.saci.r.killercoda.com/api/mcp
+
