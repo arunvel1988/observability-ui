@@ -1,8 +1,6 @@
 #!/bin/bash
 
-echo "======================================"
-echo " MIMIRTOOL INSTALL"
-echo "======================================"
+
 
 if command -v mimirtool >/dev/null 2>&1; then
     echo "[OK] mimirtool already installed"
