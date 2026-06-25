@@ -1,21 +1,27 @@
 #!/bin/bash
 
-echo "Starting Python profiling load..."
+echo "Starting profiling load generator..."
 
 while true
 do
 
-  echo "FAST request"
-  curl -s http://localhost:5000/fast
-  echo ""
+  echo "FAST endpoint"
+  curl -s http://localhost:5000/fast > /dev/null
 
-  echo "SLOW CPU request"
-  curl -s http://localhost:5000/slow
-  echo ""
+  echo "CPU HEAVY"
+  curl -s http://localhost:5000/cpu-heavy > /dev/null
 
-  echo "ERROR request"
-  curl -s http://localhost:5000/error
-  echo ""
+  echo "MEMORY HEAVY"
+  curl -s http://localhost:5000/memory-heavy > /dev/null
+
+  echo "MIXED LOAD"
+  curl -s http://localhost:5000/mixed > /dev/null
+
+  echo "DB SIMULATION"
+  curl -s http://localhost:5000/db-sim > /dev/null
+
+  echo "ERROR CASE"
+  curl -s http://localhost:5000/error > /dev/null
 
   sleep 1
 
