@@ -15,3 +15,7 @@ Grafana: http://localhost:8080/grafana/
 Load Generator UI: http://localhost:8080/loadgen/
 Jaeger UI: http://localhost:8080/jaeger/ui/
 Flagd configurator UI: http://localhost:8080/feature
+
+python3 -m venv otel-env
+source otel-env/bin/activate
+pip install otel-cli
