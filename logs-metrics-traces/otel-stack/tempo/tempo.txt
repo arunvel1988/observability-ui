@@ -1,0 +1,2 @@
+curl -i http://localhost:3200/api/mcp
+
