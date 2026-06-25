@@ -38,5 +38,5 @@ sudo systemctl start ollama
 
 python3 -m venv otel-env
 source otel-env/bin/activate
-ollmcp -h http://127.0.0.1:11434 -u http://127.0.0.1:3200/api/mcp -m llama3.2:1b
+ollmcp -u http://127.0.0.1:3200/api/mcp 
 
