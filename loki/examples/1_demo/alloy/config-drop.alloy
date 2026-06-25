@@ -1,0 +1,68 @@
+local.file_match "docker_logs" {
+
+  path_targets = [
+    {
+      __path__ = "/var/lib/docker/containers/*/*.log",
+    },
+  ]
+}
+
+
+loki.source.file "containers" {
+
+  targets = local.file_match.docker_logs.targets
+
+  forward_to = [
+    loki.process.pipeline.receiver,
+  ]
+}
+
+
+loki.process "pipeline" {
+
+  stage.docker {}
+
+  # Step 1: Try JSON parsing
+  stage.json {
+
+    expressions = {
+      level   = "level",
+      service = "service",
+      message = "message",
+    }
+
+  }
+
+  # Step 2: Drop logs that failed JSON parsing
+  # If JSON is invalid, extracted fields will be empty
+
+  stage.match {
+    selector = ""
+
+    stages = [
+      stage.drop {
+        expression = "level == \"\" or service == \"\" or message == \"\""
+      }
+    ]
+  }
+
+  # Step 3: Only valid logs reach here
+  stage.labels {
+    values = {
+      level   = "",
+      service = "",
+    }
+  }
+
+  forward_to = [
+    loki.write.default.receiver,
+  ]
+}
+
+
+loki.write "default" {
+
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+}
