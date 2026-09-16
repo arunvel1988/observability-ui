@@ -1,70 +1,249 @@
-events {}
+version: "3.8"
 
-http {
+services:
 
-    upstream tempo_backend {
-        server tempo:3200;
-    }
+  # ==========================
+  # Flask Application
+  # ==========================
+  flask-app:
+    image: python:3.11
+    container_name: flask-app
 
-    server {
+    working_dir: /app
 
-        listen 8080;
+    volumes:
+      - ./:/app
 
-        server_name _;
+    command: >
+      sh -c "
+      pip install -r requirements.txt &&
+      python app.py
+      "
 
+    ports:
+      - "5000:5000"
 
-        # ==========================================
-        # Tempo MCP
-        # ==========================================
+    depends_on:
+      - alloy
 
-        location /api/mcp {
-
-            # ======================================
-            # API KEY AUTHENTICATION
-            # ======================================
-
-            if ($http_x_api_key != "my-tempo-secret-123") {
-                return 401;
-            }
-
-
-            # ======================================
-            # Forward to Tempo
-            # ======================================
-
-            proxy_pass http://tempo_backend;
-
-            proxy_http_version 1.1;
+    networks:
+      - observability
 
 
-            # ======================================
-            # MCP Streaming
-            # ======================================
+  # ==========================
+  # Grafana Alloy
+  # OTEL Collector
+  # ==========================
+  alloy:
+    image: grafana/alloy:latest
+    container_name: alloy
 
-            proxy_buffering off;
-            proxy_cache off;
+    command:
+      - run
+      - /etc/alloy/config.alloy
 
-            proxy_read_timeout 3600s;
-            proxy_send_timeout 3600s;
+    volumes:
+      - ./alloy/config.alloy:/etc/alloy/config.alloy
+
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+
+    networks:
+      - observability
 
 
-            # ======================================
-            # Headers
-            # ======================================
+  # ==========================
+  # Prometheus
+  # Short-term metrics
+  # ==========================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
 
-            proxy_set_header Host $host;
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--web.enable-remote-write-receiver"
 
-            proxy_set_header X-Real-IP $remote_addr;
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
 
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    ports:
+      - "9090:9090"
 
-            proxy_set_header X-Forwarded-Proto $scheme;
+    networks:
+      - observability
 
-            proxy_set_header Accept $http_accept;
 
-            proxy_set_header Content-Type $http_content_type;
+  # ==========================
+  # SeaweedFS
+  # S3-compatible Object Storage
+  # ==========================
+  seaweedfs:
+    image: chrislusf/seaweedfs:latest
+    container_name: seaweedfs
 
-            proxy_set_header Mcp-Session-Id $http_mcp_session_id;
-        }
-    }
-}
+    command:
+      - "mini"
+      - "-dir=/data"
+
+    environment:
+      AWS_ACCESS_KEY_ID: admin
+      AWS_SECRET_ACCESS_KEY: password123
+
+      S3_BUCKET: mimir-blocks,mimir-ruler,mimir-alertmanager
+
+    volumes:
+      - seaweedfs-data:/data
+
+    ports:
+      - "8333:8333"
+      - "9333:9333"
+      - "8888:8888"
+      - "23646:23646"
+
+    networks:
+      - observability
+
+
+  # ==========================
+  # Mimir
+  # Long-term metrics storage
+  # ==========================
+  mimir:
+    image: grafana/mimir:latest
+    container_name: mimir
+
+    command:
+      - "-config.file=/etc/mimir/mimir.yaml"
+
+    volumes:
+      - ./mimir/mimir.yaml:/etc/mimir/mimir.yaml
+
+    ports:
+      - "9009:9009"
+
+    depends_on:
+      - seaweedfs
+
+    networks:
+      - observability
+
+
+  # ==========================
+  # Loki
+  # Logs backend
+  # ==========================
+  loki:
+    image: grafana/loki:latest
+    container_name: loki
+
+    command:
+      - "-config.file=/etc/loki/loki.yaml"
+
+    volumes:
+      - ./loki/loki.yaml:/etc/loki/loki.yaml
+
+    ports:
+      - "3100:3100"
+
+    depends_on:
+      - seaweedfs
+
+    networks:
+      - observability
+
+
+  # ==========================
+  # Tempo
+  # Trace backend + MCP
+  # ==========================
+  tempo:
+    image: grafana/tempo:latest
+    container_name: tempo
+
+    command:
+      - "-config.file=/etc/tempo/tempo.yaml"
+      - "-target=all"
+
+    volumes:
+      - ./tempo/tempo.yaml:/etc/tempo/tempo.yaml
+
+    # IMPORTANT:
+    # Tempo HTTP 3200 is NOT exposed directly.
+    # Nginx will expose it.
+    expose:
+      - "3200"
+
+      # OTLP gRPC
+      - "4317"
+
+    # Keep OTLP gRPC accessible from host on 4319
+    ports:
+      - "4319:4317"
+
+    networks:
+      - observability
+
+
+  # ==========================
+  # Nginx
+  # Tempo MCP Authentication
+  # ==========================
+  tempo-mcp-auth:
+    image: nginx:alpine
+    container_name: tempo-mcp-auth
+
+    # Host 3200 -> Nginx 8080
+    ports:
+      - "3200:8080"
+
+    volumes:
+      - ./tempo/nginx.conf:/etc/nginx/nginx.conf:ro
+
+    depends_on:
+      - tempo
+
+    networks:
+      - observability
+
+
+  # ==========================
+  # Grafana
+  # Dashboard
+  # ==========================
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+
+    ports:
+      - "3000:3000"
+
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+
+    depends_on:
+      - prometheus
+      - mimir
+      - loki
+      - tempo
+
+    networks:
+      - observability
+
+
+# ==========================
+# Persistent Volumes
+# ==========================
+volumes:
+
+  seaweedfs-data:
+
+
+# ==========================
+# Docker Network
+# ==========================
+networks:
+
+  observability:
+    driver: bridge
