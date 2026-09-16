@@ -54,4 +54,8 @@ mkdir -p tempo
 nano tempo/nginx.conf
 
 #############
+curl -i \
+  -H "X-API-Key: my-tempo-secret-123" \
+  http://localhost:3200/api/mcp
 
+######################
